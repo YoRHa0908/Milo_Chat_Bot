@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0a0a0a;
 }
 
 @theme inline {
@@ -13,11 +13,33 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-4xl: 3rem;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 2s linear infinite;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.2);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.5), 0 0 60px rgba(168, 85, 247, 0.3);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 
 .dark {
   --background: #0a0a0a;
-  --foreground: #ededed;
+  --foreground: #f8fafc;
 }
 
 body {
@@ -30,34 +52,50 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #2d2d2d;
+  background: #1a1a1a;
+  border: 1px solid #333;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #888, #aaa);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #555;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: linear-gradient(135deg, #666, #888);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #777;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(168, 85, 247, 0.3);
+  color: #ffffff;
+}
+
+.dark ::selection {
+  background-color: rgba(168, 85, 247, 0.5);
+  color: #ffffff;
 }
 
 /* Line clamp utilities */
@@ -80,4 +118,36 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+/* Luxury gradient backgrounds */
+.luxury-gradient {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #2d1b69 50%, #1a1a1a 75%, #0a0a0a 100%);
+}
+
+.luxury-card-gradient {
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.8), rgba(45, 27, 105, 0.2));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(168, 85, 247, 0.1);
+}
+
+.luxury-glow {
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.15), 0 0 80px rgba(168, 85, 247, 0.1);
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(26, 26, 26, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+}
+
+/* Shimmer effect for text */
+.shimmer-text {
+  background: linear-gradient(90deg, #f8fafc 0%, #a855f7 50%, #f8fafc 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: var(--animate-shimmer);
 }

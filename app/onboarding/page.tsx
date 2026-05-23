@@ -109,44 +109,51 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen luxury-gradient">
+      <div className="container mx-auto px-4 py-12">
         {/* Theme Toggle in top-right */}
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end mb-8">
           <ThemeToggle />
         </div>
         
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <MessageCircle className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to Milo</h1>
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center space-x-3 mb-6">
+              <div className="relative">
+                <MessageCircle className="h-12 w-12 text-purple-400" />
+                <div className="absolute -top-1 -right-1">
+                  <Heart className="h-5 w-5 text-pink-400" />
+                </div>
+              </div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Welcome to Milo</h1>
             </div>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-400 text-lg">
               Let's create your profile so Milo can help you find meaningful connections
             </p>
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-4">
               {[1, 2, 3].map((s) => (
                 <div key={s} className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    step >= s ? 'bg-purple-600 dark:bg-purple-700 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold ${
+                    step >= s 
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30' 
+                      : 'glass-effect text-gray-500 border border-gray-800'
                   }`}>
                     {s}
                   </div>
-                  <span className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                  <span className="text-sm mt-2 text-gray-400">
                     {s === 1 ? 'Basic Info' : s === 2 ? 'Interests' : 'Preferences'}
                   </span>
                 </div>
               ))}
             </div>
-            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-2 glass-effect rounded-full overflow-hidden">
               <div 
-                className="h-full bg-purple-600 dark:bg-purple-700 transition-all duration-300"
+                className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500"
                 style={{ width: `${(step / 3) * 100}%` }}
               />
             </div>
@@ -154,15 +161,17 @@ export default function OnboardingPage() {
 
           {/* Step 1: Basic Info */}
           {step === 1 && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-900/50 p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <User className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tell us about yourself</h2>
+            <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-10">
+              <div className="flex items-center space-x-4 mb-8">
+                <div className="p-3 bg-gradient-to-br from-purple-900 to-purple-700 rounded-xl">
+                  <User className="h-7 w-7 text-purple-300" />
+                </div>
+                <h2 className="text-3xl font-bold text-white">Tell us about yourself</h2>
               </div>
               
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
                     Your Name *
                   </label>
                   <input
@@ -170,14 +179,14 @@ export default function OnboardingPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                     placeholder="What should we call you?"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
                     Email Address
                   </label>
                   <input
@@ -185,14 +194,14 @@ export default function OnboardingPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                     placeholder="Optional - for match notifications"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
                       Age
                     </label>
                     <input
@@ -200,7 +209,7 @@ export default function OnboardingPage() {
                       name="age"
                       value={formData.age}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                       placeholder="Optional"
                       min="18"
                       max="100"
@@ -208,9 +217,9 @@ export default function OnboardingPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4" />
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="h-5 w-5 text-gray-400" />
                         <span>Location</span>
                       </div>
                     </label>
@@ -219,34 +228,35 @@ export default function OnboardingPage() {
                       name="location"
                       value={formData.location}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                       placeholder="City, Country"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
                     Bio
                   </label>
                   <textarea
                     name="bio"
                     value={formData.bio}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                     placeholder="Tell us a bit about yourself..."
                     rows={4}
                   />
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-end">
+              <div className="mt-10 flex justify-end">
                 <button
                   onClick={nextStep}
-                  className="bg-purple-600 dark:bg-purple-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors flex items-center space-x-2"
+                  className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-4 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 flex items-center space-x-3"
                 >
-                  <span>Continue</span>
-                  <ArrowRight className="h-5 w-5" />
+                  <span className="relative z-10">Continue</span>
+                  <ArrowRight className="h-6 w-6 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </button>
               </div>
             </div>
@@ -254,25 +264,27 @@ export default function OnboardingPage() {
 
           {/* Step 2: Interests */}
           {step === 2 && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-900/50 p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <Heart className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">What are you interested in?</h2>
+            <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-10">
+              <div className="flex items-center space-x-4 mb-8">
+                <div className="p-3 bg-gradient-to-br from-pink-900 to-pink-700 rounded-xl">
+                  <Heart className="h-7 w-7 text-pink-300" />
+                </div>
+                <h2 className="text-3xl font-bold text-white">What are you interested in?</h2>
               </div>
               
-              <p className="text-gray-600 dark:text-gray-400 mb-8">
+              <p className="text-gray-400 text-lg mb-10 leading-relaxed">
                 Select topics that interest you. This helps Milo understand your personality and find compatible matches.
               </p>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
                 {interestsOptions.map((interest) => (
                   <button
                     key={interest}
                     onClick={() => handleInterestToggle(interest)}
-                    className={`px-4 py-3 rounded-lg border-2 transition-all ${
+                    className={`px-5 py-4 rounded-xl border-2 transition-all duration-300 ${
                       formData.interests.includes(interest)
-                        ? 'border-purple-600 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20'
+                        ? 'border-purple-500 bg-gradient-to-r from-purple-900/40 to-pink-900/40 text-purple-300 shadow-lg shadow-purple-500/20'
+                        : 'glass-effect border-gray-800 hover:border-purple-500/50 hover:text-white text-gray-400'
                     }`}
                   >
                     {interest}
@@ -283,16 +295,17 @@ export default function OnboardingPage() {
               <div className="flex justify-between">
                 <button
                   onClick={prevStep}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
+                  className="group glass-effect text-gray-400 border border-gray-800 px-8 py-3 rounded-full font-semibold hover:border-purple-500/50 hover:text-white transition-all duration-500 hover:scale-105"
                 >
                   Back
                 </button>
                 <button
                   onClick={nextStep}
-                  className="bg-purple-600 dark:bg-purple-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors flex items-center space-x-2"
+                  className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-4 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 flex items-center space-x-3"
                 >
-                  <span>Continue</span>
-                  <ArrowRight className="h-5 w-5" />
+                  <span className="relative z-10">Continue</span>
+                  <ArrowRight className="h-6 w-6 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </button>
               </div>
             </div>
@@ -300,25 +313,27 @@ export default function OnboardingPage() {
 
           {/* Step 3: Preferences */}
           {step === 3 && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-900/50 p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <MessageCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">What are you looking for?</h2>
+            <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-10">
+              <div className="flex items-center space-x-4 mb-8">
+                <div className="p-3 bg-gradient-to-br from-purple-900 to-purple-700 rounded-xl">
+                  <MessageCircle className="h-7 w-7 text-purple-300" />
+                </div>
+                <h2 className="text-3xl font-bold text-white">What are you looking for?</h2>
               </div>
               
-              <p className="text-gray-600 dark:text-gray-400 mb-8">
+              <p className="text-gray-400 text-lg mb-10 leading-relaxed">
                 Help Milo understand what kind of connections you're seeking.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                 {lookingForOptions.map((option) => (
                   <button
                     key={option}
                     onClick={() => handleLookingForToggle(option)}
-                    className={`px-6 py-4 rounded-lg border-2 transition-all ${
+                    className={`px-6 py-5 rounded-xl border-2 transition-all duration-300 ${
                       formData.looking_for.includes(option)
-                        ? 'border-purple-600 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20'
+                        ? 'border-purple-500 bg-gradient-to-r from-purple-900/40 to-pink-900/40 text-purple-300 shadow-lg shadow-purple-500/20'
+                        : 'glass-effect border-gray-800 hover:border-purple-500/50 hover:text-white text-gray-400'
                     }`}
                   >
                     {option}
@@ -326,40 +341,41 @@ export default function OnboardingPage() {
                 ))}
               </div>
 
-              <div className="mt-8 p-6 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
-                <h3 className="font-semibold text-purple-800 dark:text-purple-300 mb-2">Your Profile Summary</h3>
-                <div className="space-y-2 text-gray-700 dark:text-gray-300">
-                  <p><span className="font-medium">Name:</span> {formData.name}</p>
-                  {formData.age && <p><span className="font-medium">Age:</span> {formData.age}</p>}
-                  {formData.location && <p><span className="font-medium">Location:</span> {formData.location}</p>}
-                  <p><span className="font-medium">Interests:</span> {formData.interests.join(', ') || 'None selected'}</p>
-                  <p><span className="font-medium">Looking for:</span> {formData.looking_for.join(', ') || 'Not specified'}</p>
+              <div className="mt-10 p-8 bg-gradient-to-r from-purple-900/40 to-pink-900/40 border-2 border-purple-500/30 rounded-2xl luxury-glow">
+                <h3 className="font-semibold text-white text-xl mb-4">Your Profile Summary</h3>
+                <div className="space-y-3 text-gray-300">
+                  <p><span className="font-medium text-gray-200">Name:</span> {formData.name}</p>
+                  {formData.age && <p><span className="font-medium text-gray-200">Age:</span> {formData.age}</p>}
+                  {formData.location && <p><span className="font-medium text-gray-200">Location:</span> {formData.location}</p>}
+                  <p><span className="font-medium text-gray-200">Interests:</span> {formData.interests.join(', ') || 'None selected'}</p>
+                  <p><span className="font-medium text-gray-200">Looking for:</span> {formData.looking_for.join(', ') || 'Not specified'}</p>
                 </div>
               </div>
 
-              <div className="flex justify-between mt-8">
+              <div className="flex justify-between mt-12">
                 <button
                   onClick={prevStep}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
+                  className="group glass-effect text-gray-400 border border-gray-800 px-8 py-3 rounded-full font-semibold hover:border-purple-500/50 hover:text-white transition-all duration-500 hover:scale-105"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="bg-purple-600 dark:bg-purple-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-4 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
                 >
                   {loading ? (
                     <>
-                      <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Creating Profile...</span>
+                      <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin relative z-10" />
+                      <span className="relative z-10">Creating Profile...</span>
                     </>
                   ) : (
                     <>
-                      <span>Start Chatting with Milo</span>
-                      <ArrowRight className="h-5 w-5" />
+                      <span className="relative z-10">Start Chatting with Milo</span>
+                      <ArrowRight className="h-6 w-6 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
                     </>
                   )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </button>
               </div>
             </div>

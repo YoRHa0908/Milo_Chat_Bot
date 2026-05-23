@@ -1,10 +1,10 @@
 'use client'
 
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
 
   // Initialize theme
   useEffect(() => {
@@ -14,11 +14,9 @@ export function ThemeToggle() {
       setTheme(saved)
       applyTheme(saved)
     } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      const initialTheme = prefersDark ? 'dark' : 'light'
-      setTheme(initialTheme)
-      applyTheme(initialTheme)
+      // Default to dark for luxury theme
+      setTheme('dark')
+      applyTheme('dark')
     }
   }, [])
 
@@ -42,17 +40,21 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      className="group relative p-3 rounded-xl glass-effect text-gray-300 hover:text-white border border-gray-800 hover:border-purple-500/50 transition-all duration-500 hover:scale-110"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
-      <div className="relative w-5 h-5">
-        <Sun className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-          theme === 'light' ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'
+      <div className="relative w-6 h-6">
+        <Sun className={`absolute inset-0 w-6 h-6 transition-all duration-500 ${
+          theme === 'light' ? 'opacity-100 rotate-0 text-yellow-400' : 'opacity-0 -rotate-90'
         }`} />
-        <Moon className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-          theme === 'dark' ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'
+        <Moon className={`absolute inset-0 w-6 h-6 transition-all duration-500 ${
+          theme === 'dark' ? 'opacity-100 rotate-0 text-purple-400' : 'opacity-0 rotate-90'
+        }`} />
+        <Sparkles className={`absolute inset-0 w-6 h-6 transition-all duration-500 ${
+          theme === 'dark' ? 'opacity-100 text-yellow-400 animate-pulse' : 'opacity-0'
         }`} />
       </div>
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
     </button>
   )
 }

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Milo - AI Matchmaking Assistant",
-  description: "Discover meaningful connections through conversation",
+  title: "Milo - Premium AI Matchmaking",
+  description: "Experience luxury matchmaking through intelligent conversation",
 };
 
 export default function RootLayout({
@@ -25,10 +25,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <body className="min-h-full flex flex-col luxury-gradient text-gray-100 transition-all duration-500">
+        {/* Subtle background pattern */}
+        <div className="fixed inset-0 z-[-1] opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(168,85,247,0.1)_0%,transparent_50%),radial-gradient(circle_at_70%_80%,rgba(99,102,241,0.1)_0%,transparent_50%)]"></div>
+        </div>
         {children}
       </body>
     </html>
