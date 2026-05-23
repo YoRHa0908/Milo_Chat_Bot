@@ -49,7 +49,7 @@ CREATE INDEX idx_chat_messages_session_id ON chat_messages(session_id);
 CREATE INDEX idx_matches_user_id ON matches(user_id);
 CREATE INDEX idx_matches_matched_user_id ON matches(matched_user_id);
 
--- 3. Create function to update timestamps
+-- 3. Create function to update timestamps (FIXED: using $$ instead of $)
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
