@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, User, Bot, Sparkles, Users, Heart, Home } from 'lucide-react'
+import { Send, User, Bot, Sparkles, Users, Heart, Home, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 
 type Message = {
@@ -72,11 +72,8 @@ export default function ChatPage() {
         }))
         setMessages(formattedMessages)
         
-        // Get session ID from first message
-        if (formattedMessages.length > 0) {
-          // In a real app, we'd get sessionId from API response
-          setSessionId('current-session')
-        }
+        // Clear any invalid sessionId
+        setSessionId('')
       }
     } catch (error) {
       console.error('Error loading chat history:', error)

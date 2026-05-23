@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { generateChatResponse } from '@/lib/mistral'
 
+// Helper function to check if a string is a valid UUID
+function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return uuidRegex.test(uuid)
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -10,9 +16,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message and userId are required' }, { status: 400 })
     }
 
-    // Get or create chat session
+    // Validate or create session
     let sessionId = body.sessionId
     
+    // If sessionId is provided but invalid, ignore it
+    if (sessionId && !isValidUUID(sessionId)) {
+      sessionId = undefined
+    }
+    
+    // Create new session if no valid sessionId
     if (!sessionId) {
       const { data: session, error: sessionError } = await supabase
         .from('chat_sessions')
@@ -108,7 +120,7 @@ export async function GET(request: NextRequest) {
       .select('*')
       .order('created_at', { ascending: true })
 
-    if (sessionId) {
+    if (sessionId && isValidUUID(sessionId)) {
       query = query.eq('session_id', sessionId)
     } else if (userId) {
       // Get latest session for user

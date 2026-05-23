@@ -1,4 +1,4 @@
-import MistralClient from '@mistralai/mistralai'
+import { Mistral } from '@mistralai/mistralai'
 
 const apiKey = process.env.MISTRAL_API_KEY
 
@@ -6,7 +6,8 @@ if (!apiKey) {
   console.warn('MISTRAL_API_KEY is not set. Chat functionality will be limited.')
 }
 
-export const mistralClient = apiKey ? new MistralClient(apiKey) : null
+// Initialize Mistral client with API key
+export const mistralClient = apiKey ? new Mistral({ apiKey }) : null
 
 export type ChatMessage = {
   role: 'user' | 'assistant' | 'system'
@@ -27,12 +28,16 @@ export async function generateChatResponse(
       ? `You are Milo, a friendly matchmaking assistant. The user is ${userProfile.name}, ${userProfile.age ? userProfile.age + ' years old' : ''} from ${userProfile.location || 'an unknown location'}. Their interests include: ${userProfile.interests?.join(', ') || 'various interests'}. They're looking for: ${userProfile.looking_for?.join(', ') || 'connections'}. Help them find meaningful connections by asking relevant questions and providing thoughtful advice.`
       : `You are Milo, a friendly matchmaking assistant. Help users discover and connect with relevant people by asking thoughtful questions about their interests, preferences, and what they're looking for in connections.`
 
-    const chatResponse = await mistralClient.chat({
+    // Prepare messages with system prompt
+    const allMessages = [
+      { role: 'system' as const, content: systemPrompt },
+      ...messages
+    ]
+
+    // Call Mistral API
+    const chatResponse = await mistralClient.chat.complete({
       model: 'mistral-tiny',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages
-      ],
+      messages: allMessages,
       temperature: 0.7,
       maxTokens: 500,
     })
@@ -78,9 +83,9 @@ export async function generateMatchSuggestions(
       }
     `
 
-    const response = await mistralClient.chat({
+    const response = await mistralClient.chat.complete({
       model: 'mistral-tiny',
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user' as const, content: prompt }],
       temperature: 0.3,
       maxTokens: 800,
     })

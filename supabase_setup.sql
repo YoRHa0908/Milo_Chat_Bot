@@ -75,17 +75,42 @@ ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 
 -- 6. Create basic policies (for demo - in production, use proper auth)
+-- Users table policies
 CREATE POLICY "Enable read access for all users" ON users
   FOR SELECT USING (true);
 
 CREATE POLICY "Enable insert for all users" ON users
   FOR INSERT WITH CHECK (true);
 
+CREATE POLICY "Enable update for all users" ON users
+  FOR UPDATE USING (true);
+
+-- Chat sessions table policies
+CREATE POLICY "Enable read access for all chat sessions" ON chat_sessions
+  FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for all chat sessions" ON chat_sessions
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Enable update for all chat sessions" ON chat_sessions
+  FOR UPDATE USING (true);
+
+-- Chat messages table policies
+CREATE POLICY "Enable read access for all chat messages" ON chat_messages
+  FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for all chat messages" ON chat_messages
+  FOR INSERT WITH CHECK (true);
+
+-- Matches table policies
 CREATE POLICY "Enable read access for all matches" ON matches
   FOR SELECT USING (true);
 
 CREATE POLICY "Enable insert for all matches" ON matches
   FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Enable update for all matches" ON matches
+  FOR UPDATE USING (true);
 
 -- 7. Insert some sample data (optional)
 INSERT INTO users (name, email, age, location, bio, interests, looking_for) VALUES
