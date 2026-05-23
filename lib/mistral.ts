@@ -42,7 +42,17 @@ export async function generateChatResponse(
       maxTokens: 500,
     })
 
-    return chatResponse.choices[0]?.message?.content || "I couldn't generate a response. Please try again."
+    const content = chatResponse.choices[0]?.message?.content
+    // Handle ContentChunk[] by converting to string
+    if (Array.isArray(content)) {
+      return content.map(chunk => {
+        // Handle different chunk types
+        if ('text' in chunk) return chunk.text
+        if ('content' in chunk) return chunk.content
+        return ''
+      }).join('') || "I couldn't generate a response. Please try again."
+    }
+    return content || "I couldn't generate a response. Please try again."
   } catch (error) {
     console.error('Mistral AI error:', error)
     return "I'm having trouble connecting right now. Please try again in a moment."
@@ -90,10 +100,23 @@ export async function generateMatchSuggestions(
       maxTokens: 800,
     })
 
-    const content = response.choices[0]?.message?.content || '{}'
+    const content = response.choices[0]?.message?.content
+    let contentString = '{}'
+    
+    // Handle ContentChunk[] by converting to string
+    if (Array.isArray(content)) {
+      contentString = content.map(chunk => {
+        // Handle different chunk types
+        if ('text' in chunk) return chunk.text
+        if ('content' in chunk) return chunk.content
+        return ''
+      }).join('')
+    } else if (typeof content === 'string') {
+      contentString = content
+    }
     
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      const jsonMatch = contentString.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0])
       }

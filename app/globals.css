@@ -15,11 +15,9 @@
   --radius-2xl: 1.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
@@ -41,13 +39,25 @@ body {
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #777;
 }
 
 /* Line clamp utilities */

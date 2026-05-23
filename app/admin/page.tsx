@@ -100,44 +100,44 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-sm p-8 max-w-md w-full">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-900/50 p-8 max-w-md w-full">
           <div className="flex items-center justify-center space-x-2 mb-6">
-            <Shield className="h-8 w-8 text-purple-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Admin Access</h1>
+            <Shield className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Access</h1>
           </div>
           
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Admin Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 placeholder="Enter admin password"
                 required
               />
             </div>
             
             {error && (
-              <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+              <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 p-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
             
             <button
               type="submit"
-              className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+              className="w-full bg-purple-600 dark:bg-purple-700 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
             >
               Access Admin Panel
             </button>
           </form>
           
           <div className="mt-6 text-center">
-            <Link href="/" className="text-purple-600 hover:text-purple-700 text-sm">
+            <Link href="/" className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm">
               ← Back to Home
             </Link>
           </div>
@@ -147,20 +147,20 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Admin Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Link href="/" className="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+              <Link href="/" className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                 <Home className="h-5 w-5" />
               </Link>
               <div className="flex items-center space-x-2">
-                <Shield className="h-6 w-6 text-purple-600" />
+                <Shield className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">Milo Admin Panel</h1>
-                  <p className="text-sm text-gray-600">Internal view for monitoring and management</p>
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">Milo Admin Panel</h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Internal view for monitoring and management</p>
                 </div>
               </div>
             </div>
@@ -169,13 +169,13 @@ export default function AdminPage() {
               <button
                 onClick={loadAdminData}
                 disabled={loading}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-purple-600 dark:bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 {loading ? 'Refreshing...' : 'Refresh Data'}
               </button>
               <button
                 onClick={() => setAuthenticated(false)}
-                className="text-gray-600 hover:text-gray-900 text-sm"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm"
               >
                 Logout
               </button>
@@ -187,68 +187,68 @@ export default function AdminPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm dark:shadow-gray-900/50">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Users</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Users</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalUsers}</p>
               </div>
-              <Users className="h-8 w-8 text-purple-600" />
+              <Users className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="mt-4">
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="h-4 w-4 mr-1" />
                 <span>Active platform</span>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm dark:shadow-gray-900/50">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Matches</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalMatches}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Matches</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalMatches}</p>
               </div>
-              <Heart className="h-8 w-8 text-pink-600" />
+              <Heart className="h-8 w-8 text-pink-600 dark:text-pink-400" />
             </div>
             <div className="mt-4">
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <UserCheck className="h-4 w-4 mr-1" />
                 <span>{stats.activeMatches} accepted</span>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm dark:shadow-gray-900/50">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pending Matches</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.pendingMatches}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pending Matches</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.pendingMatches}</p>
               </div>
-              <Clock className="h-8 w-8 text-yellow-600" />
+              <Clock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div className="mt-4">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 Awaiting user response
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm dark:shadow-gray-900/50">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Avg. Match Score</p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Avg. Match Score</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {matches.length > 0 
                     ? `${(matches.reduce((acc, m) => acc + m.match_score, 0) / matches.length * 100).toFixed(1)}%`
                     : '0%'
                   }
                 </p>
               </div>
-              <BarChart3 className="h-8 w-8 text-green-600" />
+              <BarChart3 className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <div className="mt-4">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 Average compatibility score
               </div>
             </div>
