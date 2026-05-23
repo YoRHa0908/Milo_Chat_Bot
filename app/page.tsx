@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { MessageCircle, Users, Heart, ArrowRight, Sparkles, Crown, Gem, Shield, Zap } from 'lucide-react'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/ThemeToggle'
+
 
 export default function Home() {
   const [userCount, setUserCount] = useState(0)
@@ -45,7 +45,6 @@ export default function Home() {
                 <span className="font-medium">Admin</span>
               </div>
             </Link>
-            <ThemeToggle />
             <Link 
               href="/onboarding" 
               className="relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20"

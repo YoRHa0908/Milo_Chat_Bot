@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User, MapPin, Heart, MessageCircle, ArrowRight } from 'lucide-react'
-import { ThemeToggle } from '@/components/ThemeToggle'
+
 
 const interestsOptions = [
   'Technology', 'Music', 'Sports', 'Travel', 'Reading', 'Cooking',
@@ -33,6 +33,12 @@ export default function OnboardingPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
+    
+    // Limit bio to 500 characters
+    if (name === 'bio' && value.length > 500) {
+      return
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
@@ -111,10 +117,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen luxury-gradient">
       <div className="container mx-auto px-4 py-12">
-        {/* Theme Toggle in top-right */}
-        <div className="flex justify-end mb-8">
-          <ThemeToggle />
-        </div>
+
         
         <div className="max-w-2xl mx-auto">
           {/* Header */}
@@ -179,7 +182,7 @@ export default function OnboardingPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
+                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                     placeholder="What should we call you?"
                     required
                   />
@@ -194,7 +197,7 @@ export default function OnboardingPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
+                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                     placeholder="Optional - for match notifications"
                   />
                 </div>
@@ -209,7 +212,7 @@ export default function OnboardingPage() {
                       name="age"
                       value={formData.age}
                       onChange={handleInputChange}
-                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
                       placeholder="Optional"
                       min="18"
                       max="100"
@@ -238,14 +241,22 @@ export default function OnboardingPage() {
                   <label className="block text-sm font-medium text-gray-300 mb-3">
                     Bio
                   </label>
-                  <textarea
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleInputChange}
-                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
-                    placeholder="Tell us a bit about yourself..."
-                    rows={4}
-                  />
+                  <div className="relative">
+                    <textarea
+                      name="bio"
+                      value={formData.bio}
+                      onChange={handleInputChange}
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300 resize-none"
+                      placeholder="Tell us a bit about yourself... Share your story, passions, and what makes you unique."
+                      rows={6}
+                    />
+                    <div className="absolute bottom-3 right-3 text-xs text-gray-500">
+                      {formData.bio.length}/500 characters
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-400 mt-2">
+                    This helps Milo understand your personality and find better matches.
+                  </p>
                 </div>
               </div>
 

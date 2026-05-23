@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Users, Heart, MessageCircle, Check, X, Home, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/ThemeToggle'
+
 
 type Match = {
   id: string
@@ -171,7 +171,6 @@ export default function MatchesPage() {
           </div>
           
           <div className="flex items-center space-x-6">
-            <ThemeToggle />
             <Link 
               href="/chat" 
               className="group glass-effect text-gray-300 border border-gray-800 px-8 py-3 rounded-full font-semibold hover:border-purple-500/50 hover:text-white transition-all duration-500 hover:scale-105 flex items-center space-x-3"

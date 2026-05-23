@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Send, User, Bot, Sparkles, Users, Heart, Home, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/ThemeToggle'
+
 
 type Message = {
   id: string
@@ -218,7 +218,6 @@ export default function ChatPage() {
           </div>
           
           <div className="flex items-center space-x-6">
-            <ThemeToggle />
             <button
               onClick={handleGetMatches}
               disabled={loading || matches.length > 0}
