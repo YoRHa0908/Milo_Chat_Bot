@@ -24,6 +24,20 @@ export async function POST(request: NextRequest) {
       sessionId = undefined
     }
     
+    // If sessionId is provided, verify it belongs to the user
+    if (sessionId) {
+      const { data: session, error: sessionError } = await supabase
+        .from('chat_sessions')
+        .select('user_id')
+        .eq('id', sessionId)
+        .single()
+
+      if (sessionError || !session || session.user_id !== body.userId) {
+        // Session doesn't exist or doesn't belong to user, create new one
+        sessionId = undefined
+      }
+    }
+    
     // Create new session if no valid sessionId
     if (!sessionId) {
       const { data: session, error: sessionError } = await supabase
@@ -111,8 +125,8 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get('sessionId')
     const userId = searchParams.get('userId')
 
-    if (!sessionId && !userId) {
-      return NextResponse.json({ error: 'sessionId or userId is required' }, { status: 400 })
+    if (!userId) {
+      return NextResponse.json({ error: 'userId is required' }, { status: 400 })
     }
 
     let query = supabase
@@ -121,8 +135,20 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: true })
 
     if (sessionId && isValidUUID(sessionId)) {
+      // Verify session belongs to user
+      const { data: session } = await supabase
+        .from('chat_sessions')
+        .select('user_id')
+        .eq('id', sessionId)
+        .single()
+
+      if (!session || session.user_id !== userId) {
+        // Session doesn't exist or doesn't belong to user
+        return NextResponse.json({ error: 'Invalid session' }, { status: 403 })
+      }
+      
       query = query.eq('session_id', sessionId)
-    } else if (userId) {
+    } else {
       // Get latest session for user
       const { data: session } = await supabase
         .from('chat_sessions')
@@ -134,6 +160,9 @@ export async function GET(request: NextRequest) {
 
       if (session) {
         query = query.eq('session_id', session.id)
+      } else {
+        // User has no chat sessions, return empty array
+        return NextResponse.json({ messages: [] })
       }
     }
 

@@ -42,6 +42,13 @@ export default function OnboardingPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  // Simple email format validation
+  const isValidEmail = (email: string): boolean => {
+    if (!email.trim()) return true // Empty email is allowed (optional field)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
   const handleInterestToggle = (interest: string) => {
     setFormData(prev => ({
       ...prev,
@@ -66,6 +73,12 @@ export default function OnboardingPage() {
       return
     }
 
+    // Validate email format if provided
+    if (formData.email.trim() && !isValidEmail(formData.email)) {
+      alert('Please enter a valid email address')
+      return
+    }
+
     setLoading(true)
     
     try {
@@ -84,6 +97,9 @@ export default function OnboardingPage() {
         // Store user ID in localStorage for demo purposes
         localStorage.setItem('milo_user_id', data.user.id)
         localStorage.setItem('milo_user_name', data.user.name)
+        
+        // Set flag to indicate this is a new user (so chat history won't be loaded)
+        localStorage.setItem('milo_is_new_user', 'true')
         
         // Redirect to chat
         router.push('/chat')
@@ -182,7 +198,7 @@ export default function OnboardingPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
+                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none transition-all duration-300"
                     placeholder="What should we call you?"
                     required
                   />
@@ -197,8 +213,8 @@ export default function OnboardingPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
-                    placeholder="Optional - for match notifications"
+                    className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none transition-all duration-300"
+                    placeholder="Enter your email address"
                   />
                 </div>
 
@@ -212,7 +228,7 @@ export default function OnboardingPage() {
                       name="age"
                       value={formData.age}
                       onChange={handleInputChange}
-                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none transition-all duration-300"
                       placeholder="Optional"
                       min="18"
                       max="100"
@@ -231,7 +247,7 @@ export default function OnboardingPage() {
                       name="location"
                       value={formData.location}
                       onChange={handleInputChange}
-                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 glass-effect text-gray-200 placeholder-gray-500 focus:outline-none transition-all duration-300"
                       placeholder="City, Country"
                     />
                   </div>
@@ -246,7 +262,7 @@ export default function OnboardingPage() {
                       name="bio"
                       value={formData.bio}
                       onChange={handleInputChange}
-                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300 resize-none"
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 luxury-card-gradient text-gray-200 placeholder-gray-500 focus:outline-none transition-all duration-300 resize-none"
                       placeholder="Tell us a bit about yourself... Share your story, passions, and what makes you unique."
                       rows={6}
                     />

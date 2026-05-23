@@ -47,8 +47,17 @@ export default function ChatPage() {
     setUserId(storedUserId)
     setUserName(storedUserName)
     
-    // Load previous messages if any
-    loadChatHistory(storedUserId)
+    // Check if this is a new user (just signed up)
+    const isNewUser = localStorage.getItem('milo_is_new_user') === 'true'
+    
+    if (isNewUser) {
+      // Clear the new user flag
+      localStorage.removeItem('milo_is_new_user')
+      // Don't load chat history for new users - they should start fresh
+    } else {
+      // Load previous messages if any
+      loadChatHistory(storedUserId)
+    }
   }, [router])
 
   useEffect(() => {
@@ -337,7 +346,7 @@ export default function ChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder="Type your message here... (Press Enter to send)"
-                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none glass-effect text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-all duration-300"
+                      className="w-full px-6 py-4 border border-gray-800 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 resize-none glass-effect text-gray-200 placeholder-gray-500 focus:outline-none transition-all duration-300"
                       rows={3}
                       disabled={loading}
                     />

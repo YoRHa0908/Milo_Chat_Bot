@@ -151,8 +151,20 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
     
-    if (!body.matchId || !body.status) {
-      return NextResponse.json({ error: 'matchId and status are required' }, { status: 400 })
+    if (!body.matchId || !body.status || !body.userId) {
+      return NextResponse.json({ error: 'matchId, status, and userId are required' }, { status: 400 })
+    }
+
+    // First verify the match belongs to the user
+    const { data: existingMatch, error: fetchError } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('id', body.matchId)
+      .or(`user_id.eq.${body.userId},matched_user_id.eq.${body.userId}`)
+      .single()
+
+    if (fetchError || !existingMatch) {
+      return NextResponse.json({ error: 'Match not found or access denied' }, { status: 404 })
     }
 
     const { data, error } = await supabase
