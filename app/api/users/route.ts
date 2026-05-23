@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { db } from '@/lib/localStorageDb'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,25 +8,24 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    let query = supabase
-      .from('users')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit)
-      .range(offset, offset + limit - 1)
-
     if (userId) {
-      query = query.eq('id', userId)
+      // Get specific user
+      const user = db.users.getById(userId)
+      
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      return NextResponse.json({ users: [user] })
+    } else {
+      // Get all users with pagination
+      const allUsers = db.users.getAll()
+      const users = allUsers
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(offset, offset + limit)
+
+      return NextResponse.json({ users })
     }
-
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Error fetching users:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ users: data })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -42,26 +41,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
 
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{
-        name: body.name,
-        email: body.email || null,
-        age: body.age || null,
-        location: body.location || null,
-        bio: body.bio || null,
-        interests: body.interests || [],
-        looking_for: body.looking_for || []
-      }])
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error creating user:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    // Check if email already exists
+    if (body.email) {
+      const existingUser = db.users.getByEmail(body.email)
+      if (existingUser) {
+        return NextResponse.json({ error: 'Email already in use' }, { status: 400 })
+      }
     }
 
-    return NextResponse.json({ user: data })
+    const user = db.users.create({
+      name: body.name,
+      email: body.email || null,
+      age: body.age || null,
+      location: body.location || null,
+      bio: body.bio || null,
+      interests: body.interests || [],
+      looking_for: body.looking_for || []
+    })
+
+    return NextResponse.json({ user })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -76,28 +74,21 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
-    const { data, error } = await supabase
-      .from('users')
-      .update({
-        name: body.name,
-        email: body.email,
-        age: body.age,
-        location: body.location,
-        bio: body.bio,
-        interests: body.interests,
-        looking_for: body.looking_for,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', body.id)
-      .select()
-      .single()
+    const user = db.users.update(body.id, {
+      name: body.name,
+      email: body.email,
+      age: body.age,
+      location: body.location,
+      bio: body.bio,
+      interests: body.interests,
+      looking_for: body.looking_for
+    })
 
-    if (error) {
-      console.error('Error updating user:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ user: data })
+    return NextResponse.json({ user })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

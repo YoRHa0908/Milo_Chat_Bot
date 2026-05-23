@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { db } from '@/lib/localStorageDb'
 import { generateChatResponse } from '@/lib/mistral'
-
-// Helper function to check if a string is a valid UUID
-function isValidUUID(uuid: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  return uuidRegex.test(uuid)
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,78 +10,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message and userId are required' }, { status: 400 })
     }
 
-    // Validate or create session
-    let sessionId = body.sessionId
+    // Get or create session
+    let session = db.chatSessions.getByUserId(body.userId)
+    let sessionId: string | undefined = session?.id
     
-    // If sessionId is provided but invalid, ignore it
-    if (sessionId && !isValidUUID(sessionId)) {
-      sessionId = undefined
-    }
-    
-    // If sessionId is provided, verify it belongs to the user
-    if (sessionId) {
-      const { data: session, error: sessionError } = await supabase
-        .from('chat_sessions')
-        .select('user_id')
-        .eq('id', sessionId)
-        .single()
-
-      if (sessionError || !session || session.user_id !== body.userId) {
-        // Session doesn't exist or doesn't belong to user, create new one
+    // If sessionId is provided in request, validate it belongs to user
+    if (body.sessionId && sessionId !== body.sessionId) {
+      const requestedSession = db.chatSessions.getById(body.sessionId)
+      if (!requestedSession || requestedSession.user_id !== body.userId) {
+        // Invalid session, create new one
+        session = null
         sessionId = undefined
+      } else {
+        session = requestedSession
+        sessionId = body.sessionId
       }
     }
     
-    // Create new session if no valid sessionId
-    if (!sessionId) {
-      const { data: session, error: sessionError } = await supabase
-        .from('chat_sessions')
-        .insert([{ user_id: body.userId }])
-        .select()
-        .single()
-
-      if (sessionError) {
-        console.error('Error creating session:', sessionError)
-        return NextResponse.json({ error: sessionError.message }, { status: 500 })
-      }
-      
+    // Create new session if none exists
+    if (!session) {
+      session = db.chatSessions.create(body.userId)
       sessionId = session.id
     }
+    
+    // At this point, session and sessionId are guaranteed to be defined
+    const finalSessionId = sessionId!
 
     // Get user profile for context
-    const { data: userProfile } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', body.userId)
-      .single()
+    const userProfile = db.users.getById(body.userId)
 
     // Get previous messages for context
-    const { data: previousMessages } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('session_id', sessionId)
-      .order('created_at', { ascending: true })
-      .limit(10)
+    const previousMessages = db.chatMessages.getBySessionId(finalSessionId)
 
     // Save user message
-    const { error: messageError } = await supabase
-      .from('chat_messages')
-      .insert([{
-        session_id: sessionId,
-        role: 'user',
-        content: body.message
-      }])
-
-    if (messageError) {
-      console.error('Error saving message:', messageError)
-      return NextResponse.json({ error: messageError.message }, { status: 500 })
-    }
+    db.chatMessages.create(finalSessionId, 'user', body.message)
 
     // Prepare messages for AI
-    const messages = previousMessages?.map(msg => ({
+    const messages = previousMessages.map(msg => ({
       role: msg.role as 'user' | 'assistant' | 'system',
       content: msg.content
-    })) || []
+    }))
 
     messages.push({ role: 'user', content: body.message })
 
@@ -95,22 +57,11 @@ export async function POST(request: NextRequest) {
     const aiResponse = await generateChatResponse(messages, userProfile)
 
     // Save AI response
-    const { error: aiMessageError } = await supabase
-      .from('chat_messages')
-      .insert([{
-        session_id: sessionId,
-        role: 'assistant',
-        content: aiResponse
-      }])
-
-    if (aiMessageError) {
-      console.error('Error saving AI message:', aiMessageError)
-      return NextResponse.json({ error: aiMessageError.message }, { status: 500 })
-    }
+    db.chatMessages.create(finalSessionId, 'assistant', aiResponse)
 
     return NextResponse.json({
       response: aiResponse,
-      sessionId,
+      sessionId: finalSessionId,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
@@ -129,51 +80,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 })
     }
 
-    let query = supabase
-      .from('chat_messages')
-      .select('*')
-      .order('created_at', { ascending: true })
-
-    if (sessionId && isValidUUID(sessionId)) {
+    let messages: import('@/lib/localStorageDb').ChatMessage[] = []
+    
+    if (sessionId) {
       // Verify session belongs to user
-      const { data: session } = await supabase
-        .from('chat_sessions')
-        .select('user_id')
-        .eq('id', sessionId)
-        .single()
-
+      const session = db.chatSessions.getById(sessionId)
       if (!session || session.user_id !== userId) {
-        // Session doesn't exist or doesn't belong to user
         return NextResponse.json({ error: 'Invalid session' }, { status: 403 })
       }
       
-      query = query.eq('session_id', sessionId)
+      messages = db.chatMessages.getBySessionId(sessionId)
     } else {
       // Get latest session for user
-      const { data: session } = await supabase
-        .from('chat_sessions')
-        .select('id')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
+      const session = db.chatSessions.getByUserId(userId)
       if (session) {
-        query = query.eq('session_id', session.id)
-      } else {
-        // User has no chat sessions, return empty array
-        return NextResponse.json({ messages: [] })
+        messages = db.chatMessages.getBySessionId(session.id)
       }
     }
 
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Error fetching messages:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ messages: data })
+    return NextResponse.json({ messages })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

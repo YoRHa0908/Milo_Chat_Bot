@@ -107,20 +107,43 @@ milo-app/
 
 ## Deployment
 
+### Environment Variables Setup
+
+Before deploying, you MUST set the following environment variables in your deployment platform:
+
+#### Required Variables:
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL (from Supabase Dashboard → Project Settings → API)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon/public key (from same location)
+
+#### Optional but Recommended:
+- `MISTRAL_API_KEY` - Your Mistral AI API key (from console.mistral.ai → API Keys)
+- `NEXT_PUBLIC_APP_URL` - Your deployed app URL (e.g., `https://your-app.vercel.app`)
+
 ### Vercel (Recommended)
 
 1. Push your code to GitHub
-2. Import project in Vercel
-3. Add environment variables
+2. Go to [vercel.com](https://vercel.com) and import your GitHub repository
+3. In project settings, go to **Environment Variables** and add all required variables
 4. Deploy!
+
+### Troubleshooting Deployment Errors
+
+If you see this error: `"Invalid request: env.NEXT_PUBLIC_SUPABASE_URL should be string"`
+
+1. **Check your environment variables** in your deployment platform
+2. **Verify Supabase credentials** are correct:
+   - Go to your Supabase project dashboard
+   - Navigate to Project Settings → API
+   - Copy the exact "Project URL" and "anon/public" key
+3. **Redeploy** after updating environment variables
 
 ### Other Platforms
 
 The app is compatible with:
-- **Render** - Use Node.js environment
-- **Railway** - Use Node.js + PostgreSQL
-- **Fly.io** - Use Docker deployment
-- **Netlify** - Use Next.js build
+- **Render** - Use Node.js environment, add environment variables in Dashboard → Environment
+- **Railway** - Use Node.js + PostgreSQL, add variables in Project → Variables
+- **Fly.io** - Use Docker deployment, set variables with `fly secrets set`
+- **Netlify** - Use Next.js build, add variables in Site Settings → Environment variables
 
 ## Testing the Application
 
