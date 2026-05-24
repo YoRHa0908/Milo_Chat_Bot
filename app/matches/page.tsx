@@ -202,6 +202,13 @@ export default function MatchesPage() {
               <Sparkles className="h-5 w-5" />
               <span>Find New Matches</span>
             </button>
+
+            <button
+              onClick={handleLogout}
+              className="group glass-effect text-gray-300 border border-gray-800 px-6 py-3 rounded-full font-semibold hover:border-red-500/50 hover:text-red-300 transition-all duration-500 hover:scale-105"
+            >
+              <span>Logout</span>
+            </button>
           </div>
         </div>
 

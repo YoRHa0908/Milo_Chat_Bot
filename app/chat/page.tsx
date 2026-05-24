@@ -254,6 +254,48 @@ export default function ChatPage() {
     }
   }
 
+  const handleLogout = () => {
+    // Clear all user data from localStorage
+    localStorage.removeItem('milo_user_id')
+    localStorage.removeItem('milo_user_name')
+    localStorage.removeItem('milo_is_new_user')
+    localStorage.removeItem('milo_users')
+    localStorage.removeItem('milo_chat_sessions')
+    localStorage.removeItem('milo_chat_messages')
+    localStorage.removeItem('milo_matches')
+    
+    // Redirect to home page
+    router.push('/')
+  }
+
+  const handleNewConversation = () => {
+    // Clear current chat messages and start fresh
+    setMessages([
+      {
+        id: '1',
+        role: 'assistant',
+        content: `Hi ${userName}! I'm Milo, your AI matchmaking assistant. Let's start a new conversation. What would you like to talk about today?`,
+        timestamp: new Date().toISOString()
+      }
+    ])
+    
+    // Clear any existing session
+    setSessionId('')
+    
+    // Also clear chat history from localStorage
+    localStorage.removeItem('milo_chat_messages')
+    localStorage.removeItem('milo_chat_sessions')
+    
+    // Focus input
+    setTimeout(focusInput, 100)
+  }
+
+  const handleClearChat = () => {
+    if (confirm('Are you sure you want to clear all chat history? This cannot be undone.')) {
+      handleNewConversation()
+    }
+  }
+
   return (
     <div className="min-h-screen luxury-gradient">
       <div className="container mx-auto px-4 py-8">
@@ -295,6 +337,13 @@ export default function ChatPage() {
               <Users className="h-5 w-5" />
               <span>View Matches</span>
             </Link>
+
+            <button
+              onClick={handleLogout}
+              className="group glass-effect text-gray-300 border border-gray-800 px-6 py-3 rounded-full font-semibold hover:border-red-500/50 hover:text-red-300 transition-all duration-500 hover:scale-105 flex items-center space-x-2"
+            >
+              <span>Logout</span>
+            </button>
           </div>
         </div>
 
@@ -403,18 +452,36 @@ export default function ChatPage() {
                       disabled={loading}
                     />
                   </div>
+                  <div className="flex flex-col space-y-3">
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={loading || !input.trim()}
+                      className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white p-5 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Send className="h-6 w-6" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    </button>
+                    <button
+                      onClick={handleNewConversation}
+                      disabled={loading}
+                      className="group glass-effect text-gray-300 border border-gray-800 p-3 rounded-xl hover:border-blue-500/50 hover:text-blue-300 transition-all duration-500 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Start new conversation"
+                    >
+                      <span className="text-sm">New Chat</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-4">
+                  <p className="text-sm text-gray-500">
+                    Milo is powered by Mistral AI. Your conversations help improve match suggestions.
+                  </p>
                   <button
-                    onClick={handleSendMessage}
-                    disabled={loading || !input.trim()}
-                    className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white p-5 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed self-end"
+                    onClick={handleClearChat}
+                    className="text-sm text-gray-400 hover:text-gray-300 transition-colors duration-300"
                   >
-                    <Send className="h-6 w-6" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    Clear chat history
                   </button>
                 </div>
-                <p className="text-sm text-gray-500 mt-4">
-                  Milo is powered by Mistral AI. Your conversations help improve match suggestions.
-                </p>
               </div>
             </div>
           </div>
