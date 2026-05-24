@@ -97,10 +97,25 @@ export default function MatchesPage() {
     setLoading(true)
     
     try {
+      // Get user profile from localStorage to send to API
+      const existingUsers = JSON.parse(localStorage.getItem('milo_users') || '[]')
+      const currentUser = existingUsers.find((user: any) => user.id === userId)
+      
       const response = await fetch('/api/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ 
+          userId,
+          userProfile: currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            age: currentUser.age,
+            location: currentUser.location,
+            bio: currentUser.bio,
+            interests: currentUser.interests,
+            looking_for: currentUser.looking_for
+          } : null
+        })
       })
 
       const data = await response.json()

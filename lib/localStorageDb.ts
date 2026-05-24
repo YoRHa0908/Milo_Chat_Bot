@@ -76,7 +76,7 @@ const saveData = <T>(key: string, data: T[]) => {
 }
 
 // Generate ID
-const generateId = () => Date.now().toString() + Math.random().toString(36).substr(2, 9)
+const generateId = () => Date.now().toString() + Math.random().toString(36).substring(2, 11)
 
 // Simple database operations
 export const db = {
@@ -90,6 +90,18 @@ export const db = {
       const users = loadData<UserProfile>('milo_users', [])
       const newUser: UserProfile = {
         id: generateId(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        ...userData
+      }
+      users.push(newUser)
+      saveData('milo_users', users)
+      return newUser
+    },
+    createWithId: (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): UserProfile => {
+      const users = loadData<UserProfile>('milo_users', [])
+      const newUser: UserProfile = {
+        id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         ...userData
@@ -182,7 +194,28 @@ export const db = {
       )
     },
     create: (userId: string, matchedUserId: string, matchScore: number): Match => {
+      // Prevent users from matching with themselves
+      if (userId === matchedUserId) {
+        console.error('CRITICAL ERROR: Attempted to create self-match', { userId, matchedUserId })
+        throw new Error('Cannot create match with yourself')
+      }
+
       const matches = loadData<Match>('milo_matches', [])
+      
+      // Also check if this match already exists
+      const existingMatch = matches.find(match => 
+        (match.user_id === userId && match.matched_user_id === matchedUserId) ||
+        (match.user_id === matchedUserId && match.matched_user_id === userId)
+      )
+      
+      if (existingMatch) {
+        // Update existing match instead of creating duplicate
+        existingMatch.match_score = matchScore
+        existingMatch.updated_at = new Date().toISOString()
+        saveData('milo_matches', matches)
+        return existingMatch
+      }
+
       const newMatch: Match = {
         id: generateId(),
         user_id: userId,
@@ -221,83 +254,50 @@ export const db = {
   }
 }
 
-// Initialize with demo data
+// Initialize with demo data - SIMPLIFIED VERSION
+// Only create demo data if we're on server-side AND no users exist
+// On client-side, users will be created via the onboarding form
 export const initializeDemoData = () => {
-  if (typeof window === 'undefined') return
-  
-  const users = db.users.getAll()
-  if (users.length === 0) {
-    // Create demo users
-    db.users.create({
-      name: 'Alex Johnson',
-      email: 'alex@example.com',
-      age: 28,
-      location: 'New York, USA',
-      bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
-      interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
-      looking_for: ['Friendship', 'Networking', 'Activity Partners']
-    })
-    
-    db.users.create({
-      name: 'Sam Taylor',
-      email: 'sam@example.com',
-      age: 32,
-      location: 'London, UK',
-      bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
-      interests: ['Art', 'Movies', 'Cooking', 'Travel'],
-      looking_for: ['Dating', 'Creative Collaboration']
-    })
-    
-    db.users.create({
-      name: 'Jordan Lee',
-      email: 'jordan@example.com',
-      age: 25,
-      location: 'Tokyo, Japan',
-      bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
-      interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
-      looking_for: ['Friendship', 'Study Buddies', 'Travel Companions']
-    })
+  if (typeof window === 'undefined') {
+    // Server-side: check if we need to initialize demo data
+    const users = db.users.getAll()
+    if (users.length === 0) {
+      // Create demo users for server-side
+      db.users.create({
+        name: 'Alex Johnson',
+        email: 'alex@example.com',
+        age: 28,
+        location: 'New York, USA',
+        bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
+        interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
+        looking_for: ['Friendship', 'Networking', 'Activity Partners']
+      })
+      
+      db.users.create({
+        name: 'Sam Taylor',
+        email: 'sam@example.com',
+        age: 32,
+        location: 'London, UK',
+        bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
+        interests: ['Art', 'Movies', 'Cooking', 'Travel'],
+        looking_for: ['Dating', 'Creative Collaboration']
+      })
+      
+      db.users.create({
+        name: 'Jordan Lee',
+        email: 'jordan@example.com',
+        age: 25,
+        location: 'Tokyo, Japan',
+        bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
+        interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
+        looking_for: ['Friendship', 'Study Buddies', 'Travel Companions']
+      })
+    }
   }
+  // Client-side: don't auto-create demo data - let users create their own profiles
 }
 
-// Initialize demo data on both client and server side
-// For server-side, we need to ensure demo data exists for API routes
+// Initialize demo data on server side only
 if (typeof window === 'undefined') {
-  // Server-side: check if we need to initialize demo data
-  const users = db.users.getAll()
-  if (users.length === 0) {
-    // Create demo users for server-side
-    db.users.create({
-      name: 'Alex Johnson',
-      email: 'alex@example.com',
-      age: 28,
-      location: 'New York, USA',
-      bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
-      interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
-      looking_for: ['Friendship', 'Networking', 'Activity Partners']
-    })
-    
-    db.users.create({
-      name: 'Sam Taylor',
-      email: 'sam@example.com',
-      age: 32,
-      location: 'London, UK',
-      bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
-      interests: ['Art', 'Movies', 'Cooking', 'Travel'],
-      looking_for: ['Dating', 'Creative Collaboration']
-    })
-    
-    db.users.create({
-      name: 'Jordan Lee',
-      email: 'jordan@example.com',
-      age: 25,
-      location: 'Tokyo, Japan',
-      bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
-      interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
-      looking_for: ['Friendship', 'Study Buddies', 'Travel Companions']
-    })
-  }
-} else {
-  // Client-side: use the existing initializeDemoData function
   initializeDemoData()
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { User, MapPin, Heart, MessageCircle, ArrowRight } from 'lucide-react'
 
@@ -20,6 +20,8 @@ export default function OnboardingPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [existingUserId, setExistingUserId] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -30,6 +32,49 @@ export default function OnboardingPage() {
     interests: [] as string[],
     looking_for: [] as string[]
   })
+
+  // Load existing user data if editing
+  useEffect(() => {
+    const userId = localStorage.getItem('milo_user_id')
+    console.log('Loading user data for edit, userId:', userId)
+    
+    if (userId) {
+      setIsEditing(true)
+      setExistingUserId(userId)
+      
+      // Load user data from localStorage
+      const existingUsers = JSON.parse(localStorage.getItem('milo_users') || '[]')
+      console.log('Existing users in localStorage:', existingUsers)
+      
+      const currentUser = existingUsers.find((user: any) => user.id === userId)
+      console.log('Found current user:', currentUser)
+      
+      if (currentUser) {
+        setFormData({
+          name: currentUser.name || '',
+          email: currentUser.email || '',
+          age: currentUser.age?.toString() || '',
+          location: currentUser.location || '',
+          bio: currentUser.bio || '',
+          interests: currentUser.interests || [],
+          looking_for: currentUser.looking_for || []
+        })
+        console.log('Form data set:', {
+          name: currentUser.name || '',
+          email: currentUser.email || '',
+          age: currentUser.age?.toString() || '',
+          location: currentUser.location || '',
+          bio: currentUser.bio || '',
+          interests: currentUser.interests || [],
+          looking_for: currentUser.looking_for || []
+        })
+      } else {
+        console.log('User not found in localStorage')
+      }
+    } else {
+      console.log('No userId found in localStorage')
+    }
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -82,33 +127,128 @@ export default function OnboardingPage() {
     setLoading(true)
     
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          age: formData.age ? parseInt(formData.age) : null
-        })
-      })
-
-      const data = await response.json()
+      let userId = existingUserId
+      let isNewUser = true
       
-      if (response.ok) {
-        // Store user ID in localStorage for demo purposes
-        localStorage.setItem('milo_user_id', data.user.id)
-        localStorage.setItem('milo_user_name', data.user.name)
-        
-        // Set flag to indicate this is a new user (so chat history won't be loaded)
-        localStorage.setItem('milo_is_new_user', 'true')
-        
-        // Redirect to chat
-        router.push('/chat')
+      if (isEditing && existingUserId) {
+        // Editing existing user
+        isNewUser = false
+        userId = existingUserId
       } else {
-        alert(`Error: ${data.error}`)
+        // Creating new user - generate unique ID
+        userId = Date.now().toString() + Math.random().toString(36).substring(2, 11)
       }
+      
+      // Create/update user object
+      const userData = {
+        id: userId!,
+        name: formData.name,
+        email: formData.email.trim() || null,
+        age: formData.age ? parseInt(formData.age) : null,
+        location: formData.location.trim() || null,
+        bio: formData.bio.trim() || null,
+        interests: formData.interests || [],
+        looking_for: formData.looking_for || [],
+        updated_at: new Date().toISOString()
+      }
+
+      // Save to localStorage (primary storage for client-side)
+      const existingUsers = JSON.parse(localStorage.getItem('milo_users') || '[]')
+      
+      if (isEditing && existingUserId) {
+        // Update existing user
+        const userIndex = existingUsers.findIndex((user: any) => user.id === existingUserId)
+        if (userIndex !== -1) {
+          // Keep the original created_at timestamp
+          const originalUser = existingUsers[userIndex]
+          
+          // Check if email is being changed to another user's email
+          if (formData.email.trim() && formData.email.trim() !== originalUser.email) {
+            const emailExists = existingUsers.some((user: any) => 
+              user.id !== existingUserId && user.email === formData.email.trim()
+            )
+            if (emailExists) {
+              alert('Email already in use by another user. Please use a different email or leave it blank.')
+              setLoading(false)
+              return
+            }
+          }
+          
+          existingUsers[userIndex] = {
+            ...originalUser,
+            ...userData,
+            created_at: originalUser.created_at // Preserve original creation date
+          }
+        } else {
+          // User not found, create as new
+          existingUsers.push({
+            ...userData,
+            created_at: new Date().toISOString()
+          })
+        }
+      } else {
+        // Creating new user
+        // Check if email already exists (only for new users)
+        if (formData.email.trim()) {
+          const existingUser = existingUsers.find((user: any) => user.email === formData.email.trim())
+          if (existingUser) {
+            alert('Email already in use. Please use a different email or leave it blank.')
+            setLoading(false)
+            return
+          }
+        }
+        
+        existingUsers.push({
+          ...userData,
+          created_at: new Date().toISOString()
+        })
+      }
+      
+      localStorage.setItem('milo_users', JSON.stringify(existingUsers))
+      
+      // Store user ID and name for session management
+      localStorage.setItem('milo_user_id', userId!)
+      localStorage.setItem('milo_user_name', formData.name)
+      
+      if (isNewUser) {
+        localStorage.setItem('milo_is_new_user', 'true')
+      } else {
+        localStorage.removeItem('milo_is_new_user')
+      }
+      
+      // Also save/update via API (for consistency with server-side matching)
+      try {
+        const apiMethod = isEditing ? 'PUT' : 'POST'
+        const apiResponse = await fetch('/api/users', {
+          method: apiMethod,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: userId,
+            name: formData.name,
+            email: formData.email.trim() || null,
+            age: formData.age ? parseInt(formData.age) : null,
+            location: formData.location.trim() || null,
+            bio: formData.bio.trim() || null,
+            interests: formData.interests || [],
+            looking_for: formData.looking_for || []
+          })
+        })
+        
+        if (!apiResponse.ok) {
+          console.warn('API save warning:', await apiResponse.text())
+        } else {
+          console.log('User saved to API successfully')
+        }
+      } catch (apiError) {
+        console.warn('API save failed (localStorage is primary):', apiError)
+        // Continue anyway - localStorage save is successful
+      }
+      
+      // Redirect to chat
+      router.push('/chat')
     } catch (error) {
-      console.error('Error creating user:', error)
-      alert('Failed to create profile. Please try again.')
+      console.error('Error saving user profile:', error)
+      alert('Failed to save profile. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -145,10 +285,15 @@ export default function OnboardingPage() {
                   <Heart className="h-5 w-5 text-pink-400" />
                 </div>
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Welcome to Milo</h1>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                {isEditing ? 'Edit Your Profile' : 'Welcome to Milo'}
+              </h1>
             </div>
             <p className="text-gray-400 text-lg">
-              Let's create your profile so Milo can help you find meaningful connections
+              {isEditing 
+                ? 'Update your profile information to improve your matches'
+                : 'Let\'s create your profile so Milo can help you find meaningful connections'
+              }
             </p>
           </div>
 
@@ -398,7 +543,9 @@ export default function OnboardingPage() {
                     </>
                   ) : (
                     <>
-                      <span className="relative z-10">Start Chatting with Milo</span>
+                      <span className="relative z-10">
+                        {isEditing ? 'Update Profile' : 'Start Chatting with Milo'}
+                      </span>
                       <ArrowRight className="h-6 w-6 relative z-10 group-hover:translate-x-2 transition-transform duration-300" />
                     </>
                   )}

@@ -49,17 +49,53 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const user = db.users.create({
-      name: body.name,
-      email: body.email || null,
-      age: body.age || null,
-      location: body.location || null,
-      bio: body.bio || null,
-      interests: body.interests || [],
-      looking_for: body.looking_for || []
-    })
+    // Check if user with this ID already exists
+    let user
+    if (body.id) {
+      // Try to update existing user
+      user = db.users.update(body.id, {
+        name: body.name,
+        email: body.email || null,
+        age: body.age || null,
+        location: body.location || null,
+        bio: body.bio || null,
+        interests: body.interests || [],
+        looking_for: body.looking_for || []
+      })
+      
+      if (!user) {
+        // User doesn't exist, create with provided ID
+        user = db.users.createWithId(body.id, {
+          name: body.name,
+          email: body.email || null,
+          age: body.age || null,
+          location: body.location || null,
+          bio: body.bio || null,
+          interests: body.interests || [],
+          looking_for: body.looking_for || []
+        })
+      }
+    } else {
+      // Create new user with generated ID
+      user = db.users.create({
+        name: body.name,
+        email: body.email || null,
+        age: body.age || null,
+        location: body.location || null,
+        bio: body.bio || null,
+        interests: body.interests || [],
+        looking_for: body.looking_for || []
+      })
+    }
 
-    return NextResponse.json({ user })
+    return NextResponse.json({ 
+      user,
+      // Include a message about storage location
+      storageInfo: {
+        savedTo: typeof window === 'undefined' ? 'server-memory' : 'localStorage',
+        userId: user.id
+      }
+    })
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

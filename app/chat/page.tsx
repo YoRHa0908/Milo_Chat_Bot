@@ -198,10 +198,25 @@ export default function ChatPage() {
     setLoading(true)
     
     try {
+      // Get user profile from localStorage to send to API
+      const existingUsers = JSON.parse(localStorage.getItem('milo_users') || '[]')
+      const currentUser = existingUsers.find((user: any) => user.id === userId)
+      
       const response = await fetch('/api/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ 
+          userId,
+          userProfile: currentUser ? {
+            name: currentUser.name,
+            email: currentUser.email,
+            age: currentUser.age,
+            location: currentUser.location,
+            bio: currentUser.bio,
+            interests: currentUser.interests,
+            looking_for: currentUser.looking_for
+          } : null
+        })
       })
 
       const data = await response.json()
@@ -446,7 +461,17 @@ export default function ChatPage() {
               
               {matches.length > 0 ? (
                 <div className="space-y-6">
-                  {matches.slice(0, 10).map((match) => (
+                  {matches
+                    .filter(match => {
+                      // Safety check: Don't show matches where matched user is the current user
+                      if (match.matched_user_id === userId) {
+                        console.warn('Filtered out self-match:', match)
+                        return false
+                      }
+                      return true
+                    })
+                    .slice(0, 10)
+                    .map((match) => (
                     <div key={match.id} className="glass-effect border border-gray-800 rounded-2xl p-6 hover:border-purple-500/30 transition-all duration-500 group">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-4">
