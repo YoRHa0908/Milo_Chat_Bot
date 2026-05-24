@@ -4,13 +4,5 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "regions": ["iad1"],
-  "env": {
-    "MISTRAL_API_KEY": {
-      "description": "Mistral AI API key (optional)"
-    },
-    "NEXT_PUBLIC_APP_URL": {
-      "description": "App URL (e.g., https://your-app.vercel.app)"
-    }
-  }
+  "regions": ["iad1"]
 }
