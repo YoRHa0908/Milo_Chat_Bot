@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         }
       })
       .sort((a, b) => b.match_score - a.match_score)
-      .slice(0, 3) // Return top 3 matches
+      .slice(0, 10) // Return top 10 matches (increased from 3)
 
     return NextResponse.json({
       matches: createdMatches,

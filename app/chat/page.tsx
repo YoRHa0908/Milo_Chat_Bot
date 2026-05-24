@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Send, User, Bot, Sparkles, Users, Heart, Home, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -16,6 +16,7 @@ type Message = {
 export default function ChatPage() {
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -33,6 +34,13 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string>('')
   const [showMatches, setShowMatches] = useState(false)
   const [matches, setMatches] = useState<any[]>([])
+
+  // Function to focus input
+  const focusInput = useCallback(() => {
+    if (inputRef.current && !loading) {
+      inputRef.current.focus()
+    }
+  }, [loading])
 
   useEffect(() => {
     // Get user from localStorage (demo purposes)
@@ -71,6 +79,12 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Focus input on component mount and whenever loading state changes
+  useEffect(() => {
+    const timer = setTimeout(focusInput, 100)
+    return () => clearTimeout(timer)
+  }, [focusInput])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -175,6 +189,8 @@ export default function ChatPage() {
       setMessages(prev => [...prev, errorMsg])
     } finally {
       setLoading(false)
+      // Focus input after sending message
+      setTimeout(focusInput, 50)
     }
   }
 
@@ -211,6 +227,8 @@ export default function ChatPage() {
       alert('Failed to get matches. Please try again.')
     } finally {
       setLoading(false)
+      // Focus input after getting matches
+      setTimeout(focusInput, 50)
     }
   }
 
@@ -360,6 +378,7 @@ export default function ChatPage() {
                 <div className="flex space-x-6">
                   <div className="flex-1">
                     <textarea
+                      ref={inputRef}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
@@ -427,7 +446,7 @@ export default function ChatPage() {
               
               {matches.length > 0 ? (
                 <div className="space-y-6">
-                  {matches.slice(0, 3).map((match) => (
+                  {matches.slice(0, 10).map((match) => (
                     <div key={match.id} className="glass-effect border border-gray-800 rounded-2xl p-6 hover:border-purple-500/30 transition-all duration-500 group">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-4">
