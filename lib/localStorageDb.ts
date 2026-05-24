@@ -47,27 +47,85 @@ const hasPostgresConnection = (): boolean => {
   return typeof window === 'undefined' && !!process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== ''
 }
 
-// Fallback to localStorage if PostgreSQL is not available (client-side)
-const localStorageFallback = {
+// In-memory store for server-side fallback (when PostgreSQL is not available)
+const serverMemoryStore: {
+  users: UserProfile[]
+  chatSessions: ChatSession[]
+  chatMessages: ChatMessage[]
+  matches: Match[]
+} = {
+  users: [],
+  chatSessions: [],
+  chatMessages: [],
+  matches: []
+}
+
+// Helper function to save to appropriate storage
+const saveToStorage = (key: string, data: any): void => {
+  if (typeof window === 'undefined') {
+    // Server-side: update in-memory store
+    switch (key) {
+      case 'users':
+        serverMemoryStore.users = data
+        break
+      case 'chatSessions':
+        serverMemoryStore.chatSessions = data
+        break
+      case 'chatMessages':
+        serverMemoryStore.chatMessages = data
+        break
+      case 'matches':
+        serverMemoryStore.matches = data
+        break
+    }
+  } else {
+    // Client-side: update localStorage
+    localStorage.setItem(`milo_${key}`, JSON.stringify(data))
+  }
+}
+
+// Helper function to load from appropriate storage
+const loadFromStorage = (key: string): any => {
+  if (typeof window === 'undefined') {
+    // Server-side: load from in-memory store
+    switch (key) {
+      case 'users':
+        return serverMemoryStore.users
+      case 'chatSessions':
+        return serverMemoryStore.chatSessions
+      case 'chatMessages':
+        return serverMemoryStore.chatMessages
+      case 'matches':
+        return serverMemoryStore.matches
+      default:
+        return []
+    }
+  } else {
+    // Client-side: load from localStorage
+    try {
+      const stored = localStorage.getItem(`milo_${key}`)
+      return stored ? JSON.parse(stored) : []
+    } catch (error) {
+      console.error(`Error loading ${key} from localStorage:`, error)
+      return []
+    }
+  }
+}
+
+// Fallback storage for when PostgreSQL is not available
+const fallbackStorage = {
   users: {
     getAll: (): UserProfile[] => {
-      if (typeof window === 'undefined') return []
-      try {
-        const stored = localStorage.getItem('milo_users')
-        return stored ? JSON.parse(stored) : []
-      } catch (error) {
-        console.error('Error loading users from localStorage:', error)
-        return []
-      }
+      return loadFromStorage('users')
     },
     
     getById: (id: string): UserProfile | null => {
-      const users = localStorageFallback.users.getAll()
+      const users = fallbackStorage.users.getAll()
       return users.find(user => user.id === id) || null
     },
     
     create: (userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): UserProfile => {
-      const users = localStorageFallback.users.getAll()
+      const users = fallbackStorage.users.getAll()
       const newUser: UserProfile = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         created_at: new Date().toISOString(),
@@ -75,12 +133,12 @@ const localStorageFallback = {
         ...userData
       }
       users.push(newUser)
-      localStorage.setItem('milo_users', JSON.stringify(users))
+      saveToStorage('users', users)
       return newUser
     },
     
     createWithId: (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): UserProfile => {
-      const users = localStorageFallback.users.getAll()
+      const users = fallbackStorage.users.getAll()
       const newUser: UserProfile = {
         id,
         created_at: new Date().toISOString(),
@@ -88,12 +146,12 @@ const localStorageFallback = {
         ...userData
       }
       users.push(newUser)
-      localStorage.setItem('milo_users', JSON.stringify(users))
+      saveToStorage('users', users)
       return newUser
     },
     
     update: (id: string, updates: Partial<UserProfile>): UserProfile | null => {
-      const users = localStorageFallback.users.getAll()
+      const users = fallbackStorage.users.getAll()
       const index = users.findIndex(user => user.id === id)
       
       if (index === -1) return null
@@ -104,35 +162,28 @@ const localStorageFallback = {
         updated_at: new Date().toISOString()
       }
       
-      localStorage.setItem('milo_users', JSON.stringify(users))
+      saveToStorage('users', users)
       return users[index]
     },
     
     getByEmail: (email: string): UserProfile | null => {
-      const users = localStorageFallback.users.getAll()
+      const users = fallbackStorage.users.getAll()
       return users.find(user => user.email === email) || null
     },
     
     getAllExcept: (excludedIds: string[]): UserProfile[] => {
-      const users = localStorageFallback.users.getAll()
+      const users = fallbackStorage.users.getAll()
       return users.filter(user => !excludedIds.includes(user.id))
     }
   },
   
   chatSessions: {
     getAll: (): ChatSession[] => {
-      if (typeof window === 'undefined') return []
-      try {
-        const stored = localStorage.getItem('milo_chat_sessions')
-        return stored ? JSON.parse(stored) : []
-      } catch (error) {
-        console.error('Error loading chat sessions from localStorage:', error)
-        return []
-      }
+      return loadFromStorage('chatSessions')
     },
     
     getByUserId: (userId: string): ChatSession | null => {
-      const sessions = localStorageFallback.chatSessions.getAll()
+      const sessions = fallbackStorage.chatSessions.getAll()
       const userSessions = sessions.filter(session => session.user_id === userId)
       return userSessions.sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -140,7 +191,7 @@ const localStorageFallback = {
     },
     
     create: (userId: string): ChatSession => {
-      const sessions = localStorageFallback.chatSessions.getAll()
+      const sessions = fallbackStorage.chatSessions.getAll()
       const newSession: ChatSession = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         user_id: userId,
@@ -148,36 +199,28 @@ const localStorageFallback = {
         updated_at: new Date().toISOString()
       }
       sessions.push(newSession)
-      localStorage.setItem('milo_chat_sessions', JSON.stringify(sessions))
+      saveToStorage('chatSessions', sessions)
       return newSession
     },
     
     getById: (sessionId: string): ChatSession | null => {
-      const sessions = localStorageFallback.chatSessions.getAll()
+      const sessions = fallbackStorage.chatSessions.getAll()
       return sessions.find(session => session.id === sessionId) || null
     }
   },
   
   chatMessages: {
     getBySessionId: (sessionId: string): ChatMessage[] => {
-      if (typeof window === 'undefined') return []
-      try {
-        const stored = localStorage.getItem('milo_chat_messages')
-        const messages = stored ? JSON.parse(stored) : []
-        return messages
-          .filter((message: ChatMessage) => message.session_id === sessionId)
-          .sort((a: ChatMessage, b: ChatMessage) => 
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          )
-      } catch (error) {
-        console.error('Error loading chat messages from localStorage:', error)
-        return []
-      }
+      const allMessages = fallbackStorage.chatMessages.getAll()
+      return allMessages
+        .filter((message: ChatMessage) => message.session_id === sessionId)
+        .sort((a: ChatMessage, b: ChatMessage) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
     },
     
     create: (sessionId: string, role: 'user' | 'assistant' | 'system', content: string): ChatMessage => {
-      const messages = localStorageFallback.chatMessages.getBySessionId(sessionId)
-      const allMessages = localStorageFallback.chatMessages.getAll()
+      const allMessages = fallbackStorage.chatMessages.getAll()
       const newMessage: ChatMessage = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         session_id: sessionId,
@@ -186,36 +229,22 @@ const localStorageFallback = {
         created_at: new Date().toISOString()
       }
       allMessages.push(newMessage)
-      localStorage.setItem('milo_chat_messages', JSON.stringify(allMessages))
+      saveToStorage('chatMessages', allMessages)
       return newMessage
     },
     
     getAll: (): ChatMessage[] => {
-      if (typeof window === 'undefined') return []
-      try {
-        const stored = localStorage.getItem('milo_chat_messages')
-        return stored ? JSON.parse(stored) : []
-      } catch (error) {
-        console.error('Error loading all chat messages from localStorage:', error)
-        return []
-      }
+      return loadFromStorage('chatMessages')
     }
   },
   
   matches: {
     getAll: (): Match[] => {
-      if (typeof window === 'undefined') return []
-      try {
-        const stored = localStorage.getItem('milo_matches')
-        return stored ? JSON.parse(stored) : []
-      } catch (error) {
-        console.error('Error loading matches from localStorage:', error)
-        return []
-      }
+      return loadFromStorage('matches')
     },
     
     getByUserId: (userId: string): Match[] => {
-      const matches = localStorageFallback.matches.getAll()
+      const matches = fallbackStorage.matches.getAll()
       return matches.filter(match => 
         match.user_id === userId || match.matched_user_id === userId
       )
@@ -227,7 +256,7 @@ const localStorageFallback = {
         throw new Error('Cannot create match with yourself')
       }
 
-      const matches = localStorageFallback.matches.getAll()
+      const matches = fallbackStorage.matches.getAll()
       
       const existingMatch = matches.find(match => 
         (match.user_id === userId && match.matched_user_id === matchedUserId) ||
@@ -237,7 +266,7 @@ const localStorageFallback = {
       if (existingMatch) {
         existingMatch.match_score = matchScore
         existingMatch.updated_at = new Date().toISOString()
-        localStorage.setItem('milo_matches', JSON.stringify(matches))
+        saveToStorage('matches', matches)
         return existingMatch
       }
 
@@ -251,12 +280,12 @@ const localStorageFallback = {
         updated_at: new Date().toISOString()
       }
       matches.push(newMatch)
-      localStorage.setItem('milo_matches', JSON.stringify(matches))
+      saveToStorage('matches', matches)
       return newMatch
     },
     
     updateStatus: (matchId: string, status: Match['status']): Match | null => {
-      const matches = localStorageFallback.matches.getAll()
+      const matches = fallbackStorage.matches.getAll()
       const index = matches.findIndex(match => match.id === matchId)
       
       if (index === -1) return null
@@ -267,12 +296,12 @@ const localStorageFallback = {
         updated_at: new Date().toISOString()
       }
       
-      localStorage.setItem('milo_matches', JSON.stringify(matches))
+      saveToStorage('matches', matches)
       return matches[index]
     },
     
     getByUserIds: (userId: string, matchedUserId: string): Match | null => {
-      const matches = localStorageFallback.matches.getAll()
+      const matches = fallbackStorage.matches.getAll()
       return matches.find(match => 
         (match.user_id === userId && match.matched_user_id === matchedUserId) ||
         (match.user_id === matchedUserId && match.matched_user_id === userId)
@@ -289,10 +318,10 @@ export const db = {
         try {
           return await postgresDb.users.getAll()
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.users.getAll()
+      return fallbackStorage.users.getAll()
     },
     
     getById: async (id: string): Promise<UserProfile | null> => {
@@ -300,10 +329,10 @@ export const db = {
         try {
           return await postgresDb.users.getById(id)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.users.getById(id)
+      return fallbackStorage.users.getById(id)
     },
     
     create: async (userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
@@ -311,10 +340,10 @@ export const db = {
         try {
           return await postgresDb.users.create(userData)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.users.create(userData)
+      return fallbackStorage.users.create(userData)
     },
     
     createWithId: async (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
@@ -322,10 +351,10 @@ export const db = {
         try {
           return await postgresDb.users.createWithId(id, userData)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.users.createWithId(id, userData)
+      return fallbackStorage.users.createWithId(id, userData)
     },
     
     update: async (id: string, updates: Partial<UserProfile>): Promise<UserProfile | null> => {
@@ -333,10 +362,10 @@ export const db = {
         try {
           return await postgresDb.users.update(id, updates)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.users.update(id, updates)
+      return fallbackStorage.users.update(id, updates)
     },
     
     getByEmail: async (email: string): Promise<UserProfile | null> => {
@@ -344,10 +373,10 @@ export const db = {
         try {
           return await postgresDb.users.getByEmail(email)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.users.getByEmail(email)
+      return fallbackStorage.users.getByEmail(email)
     },
     
     getAllExcept: async (excludedIds: string[]): Promise<UserProfile[]> => {
@@ -355,10 +384,10 @@ export const db = {
         try {
           return await postgresDb.users.getAllExcept(excludedIds)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.users.getAllExcept(excludedIds)
+      return fallbackStorage.users.getAllExcept(excludedIds)
     }
   },
   
@@ -368,10 +397,10 @@ export const db = {
         try {
           return await postgresDb.chatSessions.getAll()
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.chatSessions.getAll()
+      return fallbackStorage.chatSessions.getAll()
     },
     
     getByUserId: async (userId: string): Promise<ChatSession | null> => {
@@ -379,10 +408,10 @@ export const db = {
         try {
           return await postgresDb.chatSessions.getByUserId(userId)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.chatSessions.getByUserId(userId)
+      return fallbackStorage.chatSessions.getByUserId(userId)
     },
     
     create: async (userId: string): Promise<ChatSession> => {
@@ -390,10 +419,10 @@ export const db = {
         try {
           return await postgresDb.chatSessions.create(userId)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.chatSessions.create(userId)
+      return fallbackStorage.chatSessions.create(userId)
     },
     
     getById: async (sessionId: string): Promise<ChatSession | null> => {
@@ -401,10 +430,10 @@ export const db = {
         try {
           return await postgresDb.chatSessions.getById(sessionId)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.chatSessions.getById(sessionId)
+      return fallbackStorage.chatSessions.getById(sessionId)
     }
   },
   
@@ -414,10 +443,10 @@ export const db = {
         try {
           return await postgresDb.chatMessages.getBySessionId(sessionId)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.chatMessages.getBySessionId(sessionId)
+      return fallbackStorage.chatMessages.getBySessionId(sessionId)
     },
     
     create: async (sessionId: string, role: 'user' | 'assistant' | 'system', content: string): Promise<ChatMessage> => {
@@ -425,10 +454,10 @@ export const db = {
         try {
           return await postgresDb.chatMessages.create(sessionId, role, content)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.chatMessages.create(sessionId, role, content)
+      return fallbackStorage.chatMessages.create(sessionId, role, content)
     }
   },
   
@@ -438,10 +467,10 @@ export const db = {
         try {
           return await postgresDb.matches.getAll()
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.matches.getAll()
+      return fallbackStorage.matches.getAll()
     },
     
     getByUserId: async (userId: string): Promise<Match[]> => {
@@ -449,10 +478,10 @@ export const db = {
         try {
           return await postgresDb.matches.getByUserId(userId)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.matches.getByUserId(userId)
+      return fallbackStorage.matches.getByUserId(userId)
     },
     
     create: async (userId: string, matchedUserId: string, matchScore: number): Promise<Match> => {
@@ -460,10 +489,10 @@ export const db = {
         try {
           return await postgresDb.matches.create(userId, matchedUserId, matchScore)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.matches.create(userId, matchedUserId, matchScore)
+      return fallbackStorage.matches.create(userId, matchedUserId, matchScore)
     },
     
     updateStatus: async (matchId: string, status: Match['status']): Promise<Match | null> => {
@@ -471,10 +500,10 @@ export const db = {
         try {
           return await postgresDb.matches.updateStatus(matchId, status)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.matches.updateStatus(matchId, status)
+      return fallbackStorage.matches.updateStatus(matchId, status)
     },
     
     getByUserIds: async (userId: string, matchedUserId: string): Promise<Match | null> => {
@@ -482,10 +511,10 @@ export const db = {
         try {
           return await postgresDb.matches.getByUserIds(userId, matchedUserId)
         } catch (error) {
-          console.error('PostgreSQL error, falling back to localStorage:', error)
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
         }
       }
-      return localStorageFallback.matches.getByUserIds(userId, matchedUserId)
+      return fallbackStorage.matches.getByUserIds(userId, matchedUserId)
     }
   }
 }
@@ -499,13 +528,13 @@ export const initializeDemoData = async (): Promise<void> => {
       console.error('Error initializing PostgreSQL demo data:', error)
     }
   }
-  // localStorage doesn't need initialization
+  // fallback storage doesn't need initialization
 }
 
 // Initialize database on server-side
 if (typeof window === 'undefined') {
   if (hasPostgresConnection()) {
     initializeDatabase().catch(console.error)
-    initPostgresDemoData().catch(console.error)
+    initializeDemoData().catch(console.error)
   }
 }

@@ -45,28 +45,17 @@ export type Match = {
 // Database connection pool
 let pool: Pool | null = null
 
-const getPool = (): Pool => {
+const getPool = (): Pool | null => {
   if (!pool) {
     const connectionString = process.env.DATABASE_URL
     
-    // If DATABASE_URL is not set, return a dummy pool that will fail gracefully
-    // This allows the code to proceed and fall back to localStorage
-    if (!connectionString) {
-      // Create a pool with invalid connection string
-      // It will fail when connect() is called, but won't throw on creation
-      pool = new Pool({
-        connectionString: 'postgresql://invalid:invalid@localhost:5432/invalid',
-        ssl: false,
-        max: 1,
-        idleTimeoutMillis: 1000,
-        connectionTimeoutMillis: 1000,
-      })
-      
-      // Add error handler to prevent unhandled rejections
-      pool.on('error', (err) => {
-        console.error('PostgreSQL pool error (expected when DATABASE_URL is not set):', err.message)
-      })
-    } else {
+    // If DATABASE_URL is not set, return null to indicate no PostgreSQL connection
+    if (!connectionString || connectionString.trim() === '') {
+      console.log('PostgreSQL: DATABASE_URL not set, using localStorage fallback')
+      return null
+    }
+    
+    try {
       pool = new Pool({
         connectionString,
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
@@ -74,15 +63,52 @@ const getPool = (): Pool => {
         idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
         connectionTimeoutMillis: 2000, // How long to wait for a connection
       })
+      
+      // Test connection
+      pool.connect((err, client, release) => {
+        if (err) {
+          console.error('PostgreSQL connection test failed:', err.message)
+          pool = null // Reset pool on connection failure
+        } else {
+          console.log('PostgreSQL connection successful')
+          release()
+        }
+      })
+    } catch (error) {
+      console.error('PostgreSQL pool creation failed:', error)
+      pool = null
     }
   }
   
   return pool
 }
 
+// Helper function to execute PostgreSQL queries with null check
+const withPostgres = async <T>(
+  operation: (client: PoolClient) => Promise<T>
+): Promise<T> => {
+  const pool = getPool()
+  if (!pool) {
+    throw new Error('PostgreSQL not available')
+  }
+  
+  const client = await pool.connect()
+  try {
+    return await operation(client)
+  } finally {
+    client.release()
+  }
+}
+
 // Initialize database tables
 export const initializeDatabase = async (): Promise<void> => {
-  const client = await getPool().connect()
+  const pool = getPool()
+  if (!pool) {
+    console.log('PostgreSQL not available, skipping database initialization')
+    return
+  }
+  
+  const client = await pool.connect()
   
   try {
     // Create users table
@@ -165,28 +191,18 @@ const generateId = (): string => {
 export const db = {
   users: {
     getAll: async (): Promise<UserProfile[]> => {
-      let client: PoolClient | null = null
-      try {
-        client = await getPool().connect()
+      return withPostgres(async (client) => {
         const result = await client.query('SELECT * FROM users ORDER BY created_at DESC')
         return result.rows.map(row => ({
           ...row,
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }))
-      } catch (error) {
-        throw error
-      } finally {
-        if (client) {
-          client.release()
-        }
-      }
+      })
     },
     
     getById: async (id: string): Promise<UserProfile | null> => {
-      let client: PoolClient | null = null
-      try {
-        client = await getPool().connect()
+      return withPostgres(async (client) => {
         const result = await client.query('SELECT * FROM users WHERE id = $1', [id])
         if (result.rows.length === 0) return null
         
@@ -196,19 +212,11 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }
-      } catch (error) {
-        // Re-throw the error so it can be caught by localStorageDb.ts
-        throw error
-      } finally {
-        if (client) {
-          client.release()
-        }
-      }
+      })
     },
     
     create: async (userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const id = generateId()
         const now = new Date().toISOString()
         
@@ -236,14 +244,11 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }
-      } finally {
-        client.release()
-      }
+      })
     },
     
     createWithId: async (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const now = new Date().toISOString()
         
         const result = await client.query(
@@ -279,14 +284,11 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }
-      } finally {
-        client.release()
-      }
+      })
     },
     
     update: async (id: string, updates: Partial<UserProfile>): Promise<UserProfile | null> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         // Build dynamic update query
         const fields = []
         const values = []
@@ -352,14 +354,11 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }
-      } finally {
-        client.release()
-      }
+      })
     },
     
     getByEmail: async (email: string): Promise<UserProfile | null> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query('SELECT * FROM users WHERE email = $1', [email])
         if (result.rows.length === 0) return null
         
@@ -369,14 +368,11 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }
-      } finally {
-        client.release()
-      }
+      })
     },
     
     getAllExcept: async (excludedIds: string[]): Promise<UserProfile[]> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query(
           'SELECT * FROM users WHERE id != ALL($1) ORDER BY created_at DESC',
           [excludedIds]
@@ -386,39 +382,30 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }))
-      } finally {
-        client.release()
-      }
+      })
     }
   },
   
   chatSessions: {
     getAll: async (): Promise<ChatSession[]> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query('SELECT * FROM chat_sessions ORDER BY created_at DESC')
         return result.rows
-      } finally {
-        client.release()
-      }
+      })
     },
     
     getByUserId: async (userId: string): Promise<ChatSession | null> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query(
           'SELECT * FROM chat_sessions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
           [userId]
         )
         return result.rows[0] || null
-      } finally {
-        client.release()
-      }
+      })
     },
     
     create: async (userId: string): Promise<ChatSession> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const id = generateId()
         const now = new Date().toISOString()
         
@@ -430,39 +417,30 @@ export const db = {
         )
         
         return result.rows[0]
-      } finally {
-        client.release()
-      }
+      })
     },
     
     getById: async (sessionId: string): Promise<ChatSession | null> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query('SELECT * FROM chat_sessions WHERE id = $1', [sessionId])
         return result.rows[0] || null
-      } finally {
-        client.release()
-      }
+      })
     }
   },
   
   chatMessages: {
     getBySessionId: async (sessionId: string): Promise<ChatMessage[]> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query(
           'SELECT * FROM chat_messages WHERE session_id = $1 ORDER BY created_at ASC',
           [sessionId]
         )
         return result.rows
-      } finally {
-        client.release()
-      }
+      })
     },
     
     create: async (sessionId: string, role: 'user' | 'assistant' | 'system', content: string): Promise<ChatMessage> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const id = generateId()
         const now = new Date().toISOString()
         
@@ -474,26 +452,20 @@ export const db = {
         )
         
         return result.rows[0]
-      } finally {
-        client.release()
-      }
+      })
     }
   },
   
   matches: {
     getAll: async (): Promise<Match[]> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query('SELECT * FROM matches ORDER BY created_at DESC')
         return result.rows
-      } finally {
-        client.release()
-      }
+      })
     },
     
     getByUserId: async (userId: string): Promise<Match[]> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query(
           `SELECT * FROM matches 
            WHERE user_id = $1 OR matched_user_id = $1
@@ -501,9 +473,7 @@ export const db = {
           [userId]
         )
         return result.rows
-      } finally {
-        client.release()
-      }
+      })
     },
     
     create: async (userId: string, matchedUserId: string, matchScore: number): Promise<Match> => {
@@ -513,8 +483,7 @@ export const db = {
         throw new Error('Cannot create match with yourself')
       }
 
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const id = generateId()
         const now = new Date().toISOString()
         
@@ -530,14 +499,11 @@ export const db = {
         )
         
         return result.rows[0]
-      } finally {
-        client.release()
-      }
+      })
     },
     
     updateStatus: async (matchId: string, status: Match['status']): Promise<Match | null> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query(
           `UPDATE matches 
            SET status = $1, updated_at = $2
@@ -547,14 +513,11 @@ export const db = {
         )
         
         return result.rows[0] || null
-      } finally {
-        client.release()
-      }
+      })
     },
     
     getByUserIds: async (userId: string, matchedUserId: string): Promise<Match | null> => {
-      const client = await getPool().connect()
-      try {
+      return withPostgres(async (client) => {
         const result = await client.query(
           `SELECT * FROM matches 
            WHERE (user_id = $1 AND matched_user_id = $2)
@@ -563,16 +526,20 @@ export const db = {
         )
         
         return result.rows[0] || null
-      } finally {
-        client.release()
-      }
+      })
     }
   }
 }
 
 // Initialize demo data for PostgreSQL
 export const initializeDemoData = async (): Promise<void> => {
-  const client = await getPool().connect()
+  const pool = getPool()
+  if (!pool) {
+    console.log('PostgreSQL not available, skipping demo data initialization')
+    return
+  }
+  
+  const client = await pool.connect()
   
   try {
     // Check if we need to initialize demo data

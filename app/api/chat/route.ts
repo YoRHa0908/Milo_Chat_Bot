@@ -105,8 +105,14 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Unexpected error in chat API POST:', error)
+    // Return more detailed error information for debugging
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    }, { status: 500 })
   }
 }
 
@@ -140,7 +146,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ messages })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error('Unexpected error in chat API GET:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
