@@ -53,10 +53,18 @@ export default function ChatPage() {
     if (isNewUser) {
       // Clear the new user flag
       localStorage.removeItem('milo_is_new_user')
-      // Don't load chat history for new users - they should start fresh
+      // Update initial message to include user's name
+      setMessages([
+        {
+          id: '1',
+          role: 'assistant',
+          content: `Hi ${storedUserName}! I'm Milo, your AI matchmaking assistant. I'm here to help you discover meaningful connections. Tell me about yourself - what brings you here today?`,
+          timestamp: new Date().toISOString()
+        }
+      ])
     } else {
       // Load previous messages if any
-      loadChatHistory(storedUserId)
+      loadChatHistory(storedUserId, storedUserName)
     }
   }, [router])
 
@@ -68,7 +76,7 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const loadChatHistory = async (userId: string) => {
+  const loadChatHistory = async (userId: string, userName: string) => {
     try {
       const response = await fetch(`/api/chat?userId=${userId}`)
       const data = await response.json()
@@ -84,6 +92,16 @@ export default function ChatPage() {
         
         // Clear any invalid sessionId
         setSessionId('')
+      } else {
+        // No existing messages, update initial message with user's name
+        setMessages([
+          {
+            id: '1',
+            role: 'assistant',
+            content: `Hi ${userName}! I'm Milo, your AI matchmaking assistant. I'm here to help you discover meaningful connections. Tell me about yourself - what brings you here today?`,
+            timestamp: new Date().toISOString()
+          }
+        ])
       }
     } catch (error) {
       console.error('Error loading chat history:', error)
