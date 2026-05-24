@@ -19,14 +19,14 @@ export async function generateChatResponse(
   userProfile?: any
 ): Promise<string> {
   if (!mistralClient) {
-    return "I'm currently unavailable. Please check back later or contact support."
+    return "Milo: I'm unavailable right now. Try again later."
   }
 
   try {
     // Add system prompt based on user profile
     const systemPrompt = userProfile 
-      ? `You are Milo, a friendly matchmaking assistant. The user is ${userProfile.name}, ${userProfile.age ? userProfile.age + ' years old' : ''} from ${userProfile.location || 'an unknown location'}. Their interests include: ${userProfile.interests?.join(', ') || 'various interests'}. They're looking for: ${userProfile.looking_for?.join(', ') || 'connections'}. Help them find meaningful connections by asking relevant questions and providing thoughtful advice.`
-      : `You are Milo, a friendly matchmaking assistant. Help users discover and connect with relevant people by asking thoughtful questions about their interests, preferences, and what they're looking for in connections.`
+      ? `You are Milo, a matchmaking assistant. Keep responses brief (1-2 sentences). Always start responses with "Milo:" or include your name. The user is ${userProfile.name}. Their interests: ${userProfile.interests?.join(', ') || 'various'}. Looking for: ${userProfile.looking_for?.join(', ') || 'connections'}. Ask concise questions to help find matches.`
+      : `You are Milo, a matchmaking assistant. Keep all responses brief (1-2 sentences). Always start with "Milo:" or include your name. Ask short, direct questions to understand what the user wants in connections.`
 
     // Prepare messages with system prompt
     const allMessages = [

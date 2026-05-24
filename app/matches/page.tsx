@@ -71,7 +71,7 @@ export default function MatchesPage() {
       const response = await fetch('/api/matches', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matchId, status })
+        body: JSON.stringify({ matchId, status, userId })
       })
 
       const data = await response.json()
@@ -182,35 +182,33 @@ export default function MatchesPage() {
             <button
               onClick={handleGetNewMatches}
               disabled={loading}
-              className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
+              className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
             >
               <Sparkles className="h-5 w-5" />
               <span>Find New Matches</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </button>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-purple-500/30 transition-all duration-500 group">
+          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-purple-500/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-400">Total Matches</p>
-                <p className="text-4xl font-bold text-white group-hover:text-purple-300 transition-colors duration-300">{matches.length}</p>
+                <p className="text-4xl font-bold text-white hover:text-purple-300 transition-colors duration-300">{matches.length}</p>
               </div>
               <div className="p-3 bg-gradient-to-br from-purple-900 to-purple-700 rounded-xl">
                 <Users className="h-8 w-8 text-purple-300" />
               </div>
             </div>
-            <div className="mt-4 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </div>
           
-          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-yellow-500/30 transition-all duration-500 group">
+          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-yellow-500/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-400">Pending</p>
-                <p className="text-4xl font-bold text-white group-hover:text-yellow-300 transition-colors duration-300">
+                <p className="text-4xl font-bold text-white hover:text-yellow-300 transition-colors duration-300">
                   {matches.filter(m => m.status === 'pending').length}
                 </p>
               </div>
@@ -218,14 +216,13 @@ export default function MatchesPage() {
                 <Heart className="h-8 w-8 text-yellow-300" />
               </div>
             </div>
-            <div className="mt-4 h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </div>
           
-          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-green-500/30 transition-all duration-500 group">
+          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-green-500/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-400">Accepted</p>
-                <p className="text-4xl font-bold text-white group-hover:text-green-300 transition-colors duration-300">
+                <p className="text-4xl font-bold text-white hover:text-green-300 transition-colors duration-300">
                   {matches.filter(m => m.status === 'accepted').length}
                 </p>
               </div>
@@ -233,14 +230,13 @@ export default function MatchesPage() {
                 <Check className="h-8 w-8 text-green-300" />
               </div>
             </div>
-            <div className="mt-4 h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </div>
           
-          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-pink-500/30 transition-all duration-500 group">
+          <div className="luxury-card-gradient rounded-3xl border border-gray-800 p-8 hover:border-pink-500/50 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-400">Avg. Match Score</p>
-                <p className="text-4xl font-bold text-white group-hover:text-pink-300 transition-colors duration-300">
+                <p className="text-4xl font-bold text-white hover:text-pink-300 transition-colors duration-300">
                   {matches.length > 0 
                     ? `${(matches.reduce((acc, m) => acc + m.match_score, 0) / matches.length * 100).toFixed(0)}%`
                     : '0%'
@@ -251,7 +247,6 @@ export default function MatchesPage() {
                 <Sparkles className="h-8 w-8 text-pink-300" />
               </div>
             </div>
-            <div className="mt-4 h-1 bg-gradient-to-r from-transparent via-pink-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </div>
         </div>
 
@@ -313,10 +308,9 @@ export default function MatchesPage() {
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <Link
                   href="/chat"
-                  className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20"
+                  className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20"
                 >
-                  <span className="relative z-10">Chat with Milo</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <span>Chat with Milo</span>
                 </Link>
                 <button
                   onClick={handleGetNewMatches}
@@ -329,7 +323,7 @@ export default function MatchesPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredMatches.map((match) => (
-                <div key={match.id} className="glass-effect border border-gray-800 rounded-3xl p-8 hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-500 group">
+                <div key={match.id} className="luxury-card-gradient border border-gray-800 rounded-3xl p-8 hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300">
                   {/* Match Header */}
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center space-x-4">
@@ -337,7 +331,7 @@ export default function MatchesPage() {
                         <Users className="h-7 w-7 text-purple-300" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white text-xl group-hover:text-purple-300 transition-colors duration-300">
+                        <h3 className="font-semibold text-white text-xl hover:text-purple-300 transition-colors duration-300">
                           {match.matched_user?.name || 'Unknown User'}
                         </h3>
                         <div className="flex items-center space-x-3 mt-2">
@@ -401,7 +395,7 @@ export default function MatchesPage() {
                       <button
                         onClick={() => handleUpdateMatchStatus(match.id, 'accepted')}
                         disabled={updatingMatchId === match.id}
-                        className="group flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-500 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
+                        className="relative flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
                       >
                         {updatingMatchId === match.id ? (
                           <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -411,16 +405,14 @@ export default function MatchesPage() {
                             <span className="font-medium">Accept</span>
                           </>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       </button>
                       <button
                         onClick={() => handleUpdateMatchStatus(match.id, 'rejected')}
                         disabled={updatingMatchId === match.id}
-                        className="group flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white py-3 rounded-xl hover:from-red-700 hover:to-rose-700 transition-all duration-500 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
+                        className="relative flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white py-3 rounded-xl hover:from-red-700 hover:to-rose-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
                       >
                         <X className="h-5 w-5" />
                         <span className="font-medium">Reject</span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       </button>
                     </div>
                   )}

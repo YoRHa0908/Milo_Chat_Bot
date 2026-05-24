@@ -39,10 +39,17 @@ export type Match = {
   updated_at: string
 }
 
-// Load data from localStorage
+// In-memory storage for server-side
+const serverData: Record<string, any[]> = {}
+
+// Load data from localStorage (client) or in-memory (server)
 const loadData = <T>(key: string, defaultValue: T[]): T[] => {
-  if (typeof window === 'undefined') return defaultValue
+  if (typeof window === 'undefined') {
+    // Server-side: use in-memory storage
+    return serverData[key] || defaultValue
+  }
   
+  // Client-side: use localStorage
   try {
     const stored = localStorage.getItem(key)
     return stored ? JSON.parse(stored) : defaultValue
@@ -52,10 +59,15 @@ const loadData = <T>(key: string, defaultValue: T[]): T[] => {
   }
 }
 
-// Save data to localStorage
+// Save data to localStorage (client) or in-memory (server)
 const saveData = <T>(key: string, data: T[]) => {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') {
+    // Server-side: save to in-memory storage
+    serverData[key] = data
+    return
+  }
   
+  // Client-side: save to localStorage
   try {
     localStorage.setItem(key, JSON.stringify(data))
   } catch (error) {
@@ -248,7 +260,44 @@ export const initializeDemoData = () => {
   }
 }
 
-// Initialize demo data on client side
-if (typeof window !== 'undefined') {
+// Initialize demo data on both client and server side
+// For server-side, we need to ensure demo data exists for API routes
+if (typeof window === 'undefined') {
+  // Server-side: check if we need to initialize demo data
+  const users = db.users.getAll()
+  if (users.length === 0) {
+    // Create demo users for server-side
+    db.users.create({
+      name: 'Alex Johnson',
+      email: 'alex@example.com',
+      age: 28,
+      location: 'New York, USA',
+      bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
+      interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
+      looking_for: ['Friendship', 'Networking', 'Activity Partners']
+    })
+    
+    db.users.create({
+      name: 'Sam Taylor',
+      email: 'sam@example.com',
+      age: 32,
+      location: 'London, UK',
+      bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
+      interests: ['Art', 'Movies', 'Cooking', 'Travel'],
+      looking_for: ['Dating', 'Creative Collaboration']
+    })
+    
+    db.users.create({
+      name: 'Jordan Lee',
+      email: 'jordan@example.com',
+      age: 25,
+      location: 'Tokyo, Japan',
+      bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
+      interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
+      looking_for: ['Friendship', 'Study Buddies', 'Travel Companions']
+    })
+  }
+} else {
+  // Client-side: use the existing initializeDemoData function
   initializeDemoData()
 }

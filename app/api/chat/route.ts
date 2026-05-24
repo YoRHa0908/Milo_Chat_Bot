@@ -37,7 +37,23 @@ export async function POST(request: NextRequest) {
     const finalSessionId = sessionId!
 
     // Get user profile for context
-    const userProfile = db.users.getById(body.userId)
+    let userProfile = db.users.getById(body.userId)
+    
+    if (!userProfile) {
+      // Use demo profile if user doesn't exist in database
+      userProfile = {
+        id: body.userId,
+        name: 'User',
+        email: null,
+        age: null,
+        location: null,
+        bio: null,
+        interests: [],
+        looking_for: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    }
 
     // Get previous messages for context
     const previousMessages = db.chatMessages.getBySessionId(finalSessionId)
