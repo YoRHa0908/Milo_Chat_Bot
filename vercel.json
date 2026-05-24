@@ -4,5 +4,11 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "env": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL database connection string",
+      "required": true
+    }
+  }
 }

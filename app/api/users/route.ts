@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/localStorageDb'
+import { db } from '@/lib/localStorageDb.old'
 
 export async function GET(request: NextRequest) {
   try {

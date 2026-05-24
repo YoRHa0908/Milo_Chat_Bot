@@ -18,14 +18,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: "Hi there! I'm Milo, your AI matchmaking assistant. I'm here to help you discover meaningful connections. Tell me about yourself - what brings you here today?",
-      timestamp: new Date().toISOString()
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)

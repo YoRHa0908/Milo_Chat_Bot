@@ -1,6 +1,9 @@
-// Simple localStorage-based database
-// This is a much simpler implementation than trying to mimic Supabase
+// PostgreSQL database implementation with localStorage fallback
+// This provides the same interface as the old localStorageDb but uses PostgreSQL
 
+import { db as postgresDb, initializeDatabase, initializeDemoData as initPostgresDemoData } from './postgresDb'
+
+// Re-export types for compatibility
 export type UserProfile = {
   id: string
   email: string | null
@@ -39,67 +42,45 @@ export type Match = {
   updated_at: string
 }
 
-// In-memory storage for server-side
-const serverData: Record<string, any[]> = {}
-
-// Load data from localStorage (client) or in-memory (server)
-const loadData = <T>(key: string, defaultValue: T[]): T[] => {
-  if (typeof window === 'undefined') {
-    // Server-side: use in-memory storage
-    return serverData[key] || defaultValue
-  }
-  
-  // Client-side: use localStorage
-  try {
-    const stored = localStorage.getItem(key)
-    return stored ? JSON.parse(stored) : defaultValue
-  } catch (error) {
-    console.error(`Error loading ${key} from localStorage:`, error)
-    return defaultValue
-  }
+// Check if we have PostgreSQL connection
+const hasPostgresConnection = (): boolean => {
+  return typeof window === 'undefined' && process.env.DATABASE_URL !== undefined
 }
 
-// Save data to localStorage (client) or in-memory (server)
-const saveData = <T>(key: string, data: T[]) => {
-  if (typeof window === 'undefined') {
-    // Server-side: save to in-memory storage
-    serverData[key] = data
-    return
-  }
-  
-  // Client-side: save to localStorage
-  try {
-    localStorage.setItem(key, JSON.stringify(data))
-  } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error)
-  }
-}
-
-// Generate ID
-const generateId = () => Date.now().toString() + Math.random().toString(36).substring(2, 11)
-
-// Simple database operations
-export const db = {
+// Fallback to localStorage if PostgreSQL is not available (client-side)
+const localStorageFallback = {
   users: {
-    getAll: (): UserProfile[] => loadData('milo_users', []),
+    getAll: (): UserProfile[] => {
+      if (typeof window === 'undefined') return []
+      try {
+        const stored = localStorage.getItem('milo_users')
+        return stored ? JSON.parse(stored) : []
+      } catch (error) {
+        console.error('Error loading users from localStorage:', error)
+        return []
+      }
+    },
+    
     getById: (id: string): UserProfile | null => {
-      const users = loadData<UserProfile>('milo_users', [])
+      const users = localStorageFallback.users.getAll()
       return users.find(user => user.id === id) || null
     },
+    
     create: (userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): UserProfile => {
-      const users = loadData<UserProfile>('milo_users', [])
+      const users = localStorageFallback.users.getAll()
       const newUser: UserProfile = {
-        id: generateId(),
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         ...userData
       }
       users.push(newUser)
-      saveData('milo_users', users)
+      localStorage.setItem('milo_users', JSON.stringify(users))
       return newUser
     },
+    
     createWithId: (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): UserProfile => {
-      const users = loadData<UserProfile>('milo_users', [])
+      const users = localStorageFallback.users.getAll()
       const newUser: UserProfile = {
         id,
         created_at: new Date().toISOString(),
@@ -107,11 +88,12 @@ export const db = {
         ...userData
       }
       users.push(newUser)
-      saveData('milo_users', users)
+      localStorage.setItem('milo_users', JSON.stringify(users))
       return newUser
     },
+    
     update: (id: string, updates: Partial<UserProfile>): UserProfile | null => {
-      const users = loadData<UserProfile>('milo_users', [])
+      const users = localStorageFallback.users.getAll()
       const index = users.findIndex(user => user.id === id)
       
       if (index === -1) return null
@@ -122,102 +104,145 @@ export const db = {
         updated_at: new Date().toISOString()
       }
       
-      saveData('milo_users', users)
+      localStorage.setItem('milo_users', JSON.stringify(users))
       return users[index]
     },
+    
     getByEmail: (email: string): UserProfile | null => {
-      const users = loadData<UserProfile>('milo_users', [])
+      const users = localStorageFallback.users.getAll()
       return users.find(user => user.email === email) || null
     },
+    
     getAllExcept: (excludedIds: string[]): UserProfile[] => {
-      const users = loadData<UserProfile>('milo_users', [])
+      const users = localStorageFallback.users.getAll()
       return users.filter(user => !excludedIds.includes(user.id))
     }
   },
   
   chatSessions: {
-    getAll: (): ChatSession[] => loadData('milo_chat_sessions', []),
+    getAll: (): ChatSession[] => {
+      if (typeof window === 'undefined') return []
+      try {
+        const stored = localStorage.getItem('milo_chat_sessions')
+        return stored ? JSON.parse(stored) : []
+      } catch (error) {
+        console.error('Error loading chat sessions from localStorage:', error)
+        return []
+      }
+    },
+    
     getByUserId: (userId: string): ChatSession | null => {
-      const sessions = loadData<ChatSession>('milo_chat_sessions', [])
-      // Get latest session for user
+      const sessions = localStorageFallback.chatSessions.getAll()
       const userSessions = sessions.filter(session => session.user_id === userId)
       return userSessions.sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0] || null
     },
+    
     create: (userId: string): ChatSession => {
-      const sessions = loadData<ChatSession>('milo_chat_sessions', [])
+      const sessions = localStorageFallback.chatSessions.getAll()
       const newSession: ChatSession = {
-        id: generateId(),
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         user_id: userId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
       sessions.push(newSession)
-      saveData('milo_chat_sessions', sessions)
+      localStorage.setItem('milo_chat_sessions', JSON.stringify(sessions))
       return newSession
     },
+    
     getById: (sessionId: string): ChatSession | null => {
-      const sessions = loadData<ChatSession>('milo_chat_sessions', [])
+      const sessions = localStorageFallback.chatSessions.getAll()
       return sessions.find(session => session.id === sessionId) || null
     }
   },
   
   chatMessages: {
     getBySessionId: (sessionId: string): ChatMessage[] => {
-      const messages = loadData<ChatMessage>('milo_chat_messages', [])
-      return messages
-        .filter(message => message.session_id === sessionId)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      if (typeof window === 'undefined') return []
+      try {
+        const stored = localStorage.getItem('milo_chat_messages')
+        const messages = stored ? JSON.parse(stored) : []
+        return messages
+          .filter((message: ChatMessage) => message.session_id === sessionId)
+          .sort((a: ChatMessage, b: ChatMessage) => 
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          )
+      } catch (error) {
+        console.error('Error loading chat messages from localStorage:', error)
+        return []
+      }
     },
+    
     create: (sessionId: string, role: 'user' | 'assistant' | 'system', content: string): ChatMessage => {
-      const messages = loadData<ChatMessage>('milo_chat_messages', [])
+      const messages = localStorageFallback.chatMessages.getBySessionId(sessionId)
+      const allMessages = localStorageFallback.chatMessages.getAll()
       const newMessage: ChatMessage = {
-        id: generateId(),
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         session_id: sessionId,
         role,
         content,
         created_at: new Date().toISOString()
       }
-      messages.push(newMessage)
-      saveData('milo_chat_messages', messages)
+      allMessages.push(newMessage)
+      localStorage.setItem('milo_chat_messages', JSON.stringify(allMessages))
       return newMessage
+    },
+    
+    getAll: (): ChatMessage[] => {
+      if (typeof window === 'undefined') return []
+      try {
+        const stored = localStorage.getItem('milo_chat_messages')
+        return stored ? JSON.parse(stored) : []
+      } catch (error) {
+        console.error('Error loading all chat messages from localStorage:', error)
+        return []
+      }
     }
   },
   
   matches: {
-    getAll: (): Match[] => loadData('milo_matches', []),
+    getAll: (): Match[] => {
+      if (typeof window === 'undefined') return []
+      try {
+        const stored = localStorage.getItem('milo_matches')
+        return stored ? JSON.parse(stored) : []
+      } catch (error) {
+        console.error('Error loading matches from localStorage:', error)
+        return []
+      }
+    },
+    
     getByUserId: (userId: string): Match[] => {
-      const matches = loadData<Match>('milo_matches', [])
+      const matches = localStorageFallback.matches.getAll()
       return matches.filter(match => 
         match.user_id === userId || match.matched_user_id === userId
       )
     },
+    
     create: (userId: string, matchedUserId: string, matchScore: number): Match => {
-      // Prevent users from matching with themselves
       if (userId === matchedUserId) {
         console.error('CRITICAL ERROR: Attempted to create self-match', { userId, matchedUserId })
         throw new Error('Cannot create match with yourself')
       }
 
-      const matches = loadData<Match>('milo_matches', [])
+      const matches = localStorageFallback.matches.getAll()
       
-      // Also check if this match already exists
       const existingMatch = matches.find(match => 
         (match.user_id === userId && match.matched_user_id === matchedUserId) ||
         (match.user_id === matchedUserId && match.matched_user_id === userId)
       )
       
       if (existingMatch) {
-        // Update existing match instead of creating duplicate
         existingMatch.match_score = matchScore
         existingMatch.updated_at = new Date().toISOString()
-        saveData('milo_matches', matches)
+        localStorage.setItem('milo_matches', JSON.stringify(matches))
         return existingMatch
       }
 
       const newMatch: Match = {
-        id: generateId(),
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         user_id: userId,
         matched_user_id: matchedUserId,
         match_score: matchScore,
@@ -226,11 +251,12 @@ export const db = {
         updated_at: new Date().toISOString()
       }
       matches.push(newMatch)
-      saveData('milo_matches', matches)
+      localStorage.setItem('milo_matches', JSON.stringify(matches))
       return newMatch
     },
+    
     updateStatus: (matchId: string, status: Match['status']): Match | null => {
-      const matches = loadData<Match>('milo_matches', [])
+      const matches = localStorageFallback.matches.getAll()
       const index = matches.findIndex(match => match.id === matchId)
       
       if (index === -1) return null
@@ -241,11 +267,12 @@ export const db = {
         updated_at: new Date().toISOString()
       }
       
-      saveData('milo_matches', matches)
+      localStorage.setItem('milo_matches', JSON.stringify(matches))
       return matches[index]
     },
+    
     getByUserIds: (userId: string, matchedUserId: string): Match | null => {
-      const matches = loadData<Match>('milo_matches', [])
+      const matches = localStorageFallback.matches.getAll()
       return matches.find(match => 
         (match.user_id === userId && match.matched_user_id === matchedUserId) ||
         (match.user_id === matchedUserId && match.matched_user_id === userId)
@@ -254,50 +281,231 @@ export const db = {
   }
 }
 
-// Initialize with demo data - SIMPLIFIED VERSION
-// Only create demo data if we're on server-side AND no users exist
-// On client-side, users will be created via the onboarding form
-export const initializeDemoData = () => {
-  if (typeof window === 'undefined') {
-    // Server-side: check if we need to initialize demo data
-    const users = db.users.getAll()
-    if (users.length === 0) {
-      // Create demo users for server-side
-      db.users.create({
-        name: 'Alex Johnson',
-        email: 'alex@example.com',
-        age: 28,
-        location: 'New York, USA',
-        bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
-        interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
-        looking_for: ['Friendship', 'Networking', 'Activity Partners']
-      })
-      
-      db.users.create({
-        name: 'Sam Taylor',
-        email: 'sam@example.com',
-        age: 32,
-        location: 'London, UK',
-        bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
-        interests: ['Art', 'Movies', 'Cooking', 'Travel'],
-        looking_for: ['Dating', 'Creative Collaboration']
-      })
-      
-      db.users.create({
-        name: 'Jordan Lee',
-        email: 'jordan@example.com',
-        age: 25,
-        location: 'Tokyo, Japan',
-        bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
-        interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
-        looking_for: ['Friendship', 'Study Buddies', 'Travel Companions']
-      })
+// Main database interface
+export const db = {
+  users: {
+    getAll: async (): Promise<UserProfile[]> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.users.getAll()
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.users.getAll()
+    },
+    
+    getById: async (id: string): Promise<UserProfile | null> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.users.getById(id)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.users.getById(id)
+    },
+    
+    create: async (userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.users.create(userData)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.users.create(userData)
+    },
+    
+    createWithId: async (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.users.createWithId(id, userData)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.users.createWithId(id, userData)
+    },
+    
+    update: async (id: string, updates: Partial<UserProfile>): Promise<UserProfile | null> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.users.update(id, updates)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.users.update(id, updates)
+    },
+    
+    getByEmail: async (email: string): Promise<UserProfile | null> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.users.getByEmail(email)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.users.getByEmail(email)
+    },
+    
+    getAllExcept: async (excludedIds: string[]): Promise<UserProfile[]> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.users.getAllExcept(excludedIds)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.users.getAllExcept(excludedIds)
+    }
+  },
+  
+  chatSessions: {
+    getAll: async (): Promise<ChatSession[]> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.chatSessions.getAll()
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.chatSessions.getAll()
+    },
+    
+    getByUserId: async (userId: string): Promise<ChatSession | null> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.chatSessions.getByUserId(userId)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.chatSessions.getByUserId(userId)
+    },
+    
+    create: async (userId: string): Promise<ChatSession> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.chatSessions.create(userId)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.chatSessions.create(userId)
+    },
+    
+    getById: async (sessionId: string): Promise<ChatSession | null> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.chatSessions.getById(sessionId)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.chatSessions.getById(sessionId)
+    }
+  },
+  
+  chatMessages: {
+    getBySessionId: async (sessionId: string): Promise<ChatMessage[]> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.chatMessages.getBySessionId(sessionId)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.chatMessages.getBySessionId(sessionId)
+    },
+    
+    create: async (sessionId: string, role: 'user' | 'assistant' | 'system', content: string): Promise<ChatMessage> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.chatMessages.create(sessionId, role, content)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.chatMessages.create(sessionId, role, content)
+    }
+  },
+  
+  matches: {
+    getAll: async (): Promise<Match[]> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.matches.getAll()
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.matches.getAll()
+    },
+    
+    getByUserId: async (userId: string): Promise<Match[]> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.matches.getByUserId(userId)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.matches.getByUserId(userId)
+    },
+    
+    create: async (userId: string, matchedUserId: string, matchScore: number): Promise<Match> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.matches.create(userId, matchedUserId, matchScore)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.matches.create(userId, matchedUserId, matchScore)
+    },
+    
+    updateStatus: async (matchId: string, status: Match['status']): Promise<Match | null> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.matches.updateStatus(matchId, status)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.matches.updateStatus(matchId, status)
+    },
+    
+    getByUserIds: async (userId: string, matchedUserId: string): Promise<Match | null> => {
+      if (hasPostgresConnection()) {
+        try {
+          return await postgresDb.matches.getByUserIds(userId, matchedUserId)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to localStorage:', error)
+        }
+      }
+      return localStorageFallback.matches.getByUserIds(userId, matchedUserId)
     }
   }
-  // Client-side: don't auto-create demo data - let users create their own profiles
 }
 
-// Initialize demo data on server side only
+// Initialize demo data
+export const initializeDemoData = async (): Promise<void> => {
+  if (hasPostgresConnection()) {
+    try {
+      await initPostgresDemoData()
+    } catch (error) {
+      console.error('Error initializing PostgreSQL demo data:', error)
+    }
+  }
+  // localStorage doesn't need initialization
+}
+
+// Initialize database on server-side
 if (typeof window === 'undefined') {
-  initializeDemoData()
+  if (hasPostgresConnection()) {
+    initializeDatabase().catch(console.error)
+    initPostgresDemoData().catch(console.error)
+  }
 }

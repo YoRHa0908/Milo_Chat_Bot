@@ -6,25 +6,26 @@ A production-grade chat-first AI product that helps users discover and get match
 
 ✅ **Public-facing web app** - Beautiful, responsive interface  
 ✅ **User onboarding flow** - Collects relevant profile information  
-✅ **Local storage database** - Stores user data in browser localStorage  
+✅ **PostgreSQL Database** - Persistent data storage with PostgreSQL  
 ✅ **Chat interface** - Powered by Mistral AI free model (optional)  
 ✅ **Matching experience** - AI-powered match suggestions  
 ✅ **Admin/internal view** - Monitor users and matches  
-✅ **Deployable** - Ready for Vercel deployment (no database required)  
+✅ **Deployable** - Ready for Vercel deployment with PostgreSQL  
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (React) with TypeScript & Tailwind CSS
 - **Backend**: Next.js API Routes
-- **Database**: localStorage (browser storage) - no external database needed!
+- **Database**: PostgreSQL (persistent storage) with localStorage fallback
 - **AI**: Mistral AI (free tier, optional)
-- **Deployment**: Vercel (recommended)
+- **Deployment**: Vercel (recommended) with PostgreSQL add-on
 
 ## Getting Started
 
 ### 1. Prerequisites
 
 - Node.js 18+ and npm
+- PostgreSQL database (local or cloud)
 - (Optional) Mistral AI API key (free tier)
 
 ### 2. Environment Setup
@@ -42,9 +43,12 @@ A production-grade chat-first AI product that helps users discover and get match
 
    # App Configuration
    NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+   # PostgreSQL Database Configuration
+   DATABASE_URL=postgresql://username:password@localhost:5432/milo_db
    ```
 
-   **Note**: No Supabase required! The app uses localStorage for data storage.
+   **Note**: The app now uses PostgreSQL for persistent data storage.
 
 ### 3. Installation & Running
 
@@ -74,7 +78,8 @@ milo-app/
 │   ├── admin/             # Admin panel
 │   └── page.tsx           # Landing page
 ├── lib/                   # Shared utilities
-│   ├── localStorageDb.ts  # localStorage-based database
+│   ├── localStorageDb.ts  # Database interface (PostgreSQL with localStorage fallback)
+│   ├── postgresDb.ts      # PostgreSQL database implementation
 │   └── mistral.ts         # Mistral AI client
 └── public/                # Static assets
 ```
@@ -92,38 +97,44 @@ milo-app/
 
 ### Environment Variables Setup
 
-Before deploying, you can set the following environment variables in your deployment platform:
+Before deploying, you must set the following environment variables in your deployment platform:
+
+#### Required Variables:
+- `DATABASE_URL` - PostgreSQL database connection string
 
 #### Optional Variables:
 - `MISTRAL_API_KEY` - Your Mistral AI API key (from console.mistral.ai → API Keys)
 - `NEXT_PUBLIC_APP_URL` - Your deployed app URL (e.g., `https://your-app.vercel.app`)
 
-#### Important: No Supabase Required!
-The app uses localStorage, so you don't need to set `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-
 ### Vercel (Recommended)
 
 1. Push your code to GitHub
 2. Go to [vercel.com](https://vercel.com) and import your GitHub repository
-3. In project settings, go to **Environment Variables** and add optional variables
-4. Deploy!
+3. Add a PostgreSQL database:
+   - Go to **Storage** → **Create Database** → **PostgreSQL**
+   - Or use an external PostgreSQL provider (Neon, Supabase, Railway, etc.)
+4. In project settings, go to **Environment Variables** and add:
+   - `DATABASE_URL` - Your PostgreSQL connection string
+   - Optional: `MISTRAL_API_KEY` and `NEXT_PUBLIC_APP_URL`
+5. Deploy!
 
-### Troubleshooting Deployment Errors
+### Setting Up PostgreSQL Database
 
-If you see this error: `"Invalid request: env.NEXT_PUBLIC_SUPABASE_URL should be string"`
+You can use any PostgreSQL provider:
 
-1. **This means old Supabase configuration is still referenced**
-2. **Solution**: The app no longer needs Supabase! It uses localStorage
-3. **Remove** any references to `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from your deployment platform
-4. **Redeploy** after removing these variables
+1. **Vercel Postgres** (integrated)
+2. **Neon** (neon.tech) - Free tier available
+3. **Supabase** (supabase.com) - Free tier available
+4. **Railway** (railway.app) - Free tier available
+5. **Local PostgreSQL** - For development
 
 ### Other Platforms
 
 The app is compatible with:
-- **Render** - Use Node.js environment
-- **Railway** - Use Node.js environment
-- **Fly.io** - Use Docker deployment
-- **Netlify** - Use Next.js build
+- **Render** - Use Node.js environment with PostgreSQL add-on
+- **Railway** - Use Node.js environment with PostgreSQL
+- **Fly.io** - Use Docker deployment with PostgreSQL
+- **Netlify** - Use Next.js build with external PostgreSQL
 
 ## Testing the Application
 
@@ -145,12 +156,13 @@ The app is compatible with:
 - AI analyzes conversations for compatibility
 - Match suggestions based on shared interests
 - Match scoring and status management
+- **Self-match prevention** - Users cannot match with themselves
 
 ### User Management
 - Complete onboarding flow
 - Profile creation and editing
 - Interest-based matching preferences
-- **Data stored in browser localStorage** - no database required!
+- **Data stored in PostgreSQL** - persistent storage across sessions
 
 ### Admin Dashboard
 - User and match monitoring
@@ -159,10 +171,10 @@ The app is compatible with:
 
 ## Development Notes
 
-- Uses localStorage for user data persistence (resets on browser clear)
+- Uses PostgreSQL for persistent data storage with localStorage fallback
 - Mistral AI is optional - chat works with fallback responses
-- No external database dependencies
-- Easy to deploy on any platform
+- Self-match prevention at multiple levels (database, API, UI)
+- Easy to deploy on any platform with PostgreSQL support
 
 ## License
 

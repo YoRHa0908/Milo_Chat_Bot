@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/localStorageDb'
+import { db } from '@/lib/localStorageDb.old'
 
 // Simple admin authentication (in production, use proper auth)
 const ADMIN_PASSWORD = 'milo-admin-2024'
@@ -147,9 +147,10 @@ export async function GET(request: NextRequest) {
       users: users.slice(0, 10), // Last 10 users
       matches: enrichedMatches, // Last 10 matches with user data
       systemInfo: {
-        database: 'localStorage',
+        database: process.env.DATABASE_URL ? 'PostgreSQL' : 'localStorage',
         timestamp: new Date().toISOString(),
-        version: '1.0.0'
+        version: '1.0.0',
+        hasPostgres: !!process.env.DATABASE_URL
       }
     })
   } catch (error) {
