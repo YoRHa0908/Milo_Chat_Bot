@@ -50,6 +50,23 @@ export default function Home() {
                 <span className="font-medium">Admin</span>
               </div>
             </Link>
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('milo_user_id')
+                  localStorage.removeItem('milo_user_name')
+                  localStorage.removeItem('milo_is_new_user')
+                  localStorage.removeItem('milo_users')
+                  localStorage.removeItem('milo_chat_sessions')
+                  localStorage.removeItem('milo_chat_messages')
+                  localStorage.removeItem('milo_matches')
+                  window.location.reload()
+                }}
+                className="text-gray-300 hover:text-red-300 transition-colors duration-300 hover:scale-105"
+              >
+                <span className="font-medium">Logout</span>
+              </button>
+            )}
             <Link 
               href={isLoggedIn ? "/chat" : "/onboarding"} 
               className="relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20"

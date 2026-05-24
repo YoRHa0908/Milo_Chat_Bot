@@ -140,6 +140,20 @@ export default function MatchesPage() {
     }
   }
 
+  const handleLogout = () => {
+    // Clear all user data from localStorage
+    localStorage.removeItem('milo_user_id')
+    localStorage.removeItem('milo_user_name')
+    localStorage.removeItem('milo_is_new_user')
+    localStorage.removeItem('milo_users')
+    localStorage.removeItem('milo_chat_sessions')
+    localStorage.removeItem('milo_chat_messages')
+    localStorage.removeItem('milo_matches')
+    
+    // Redirect to home page
+    router.push('/')
+  }
+
   const filteredMatches = matches.filter(match => {
     if (activeTab === 'all') return true
     return match.status === activeTab
