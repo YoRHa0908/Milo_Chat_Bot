@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/localStorageDb.old'
+import { db } from '@/lib/localStorageDb'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     if (userId) {
       // Get specific user
-      const user = db.users.getById(userId)
+      const user = await db.users.getById(userId)
       
       if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ users: [user] })
     } else {
       // Get all users with pagination
-      const allUsers = db.users.getAll()
+      const allUsers = await db.users.getAll()
       const users = allUsers
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(offset, offset + limit)
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Check if email already exists
     if (body.email) {
-      const existingUser = db.users.getByEmail(body.email)
+      const existingUser = await db.users.getByEmail(body.email)
       if (existingUser) {
         return NextResponse.json({ error: 'Email already in use' }, { status: 400 })
       }
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     let user
     if (body.id) {
       // Try to update existing user
-      user = db.users.update(body.id, {
+      user = await db.users.update(body.id, {
         name: body.name,
         email: body.email || null,
         age: body.age || null,
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       
       if (!user) {
         // User doesn't exist, create with provided ID
-        user = db.users.createWithId(body.id, {
+        user = await db.users.createWithId(body.id, {
           name: body.name,
           email: body.email || null,
           age: body.age || null,
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Create new user with generated ID
-      user = db.users.create({
+      user = await db.users.create({
         name: body.name,
         email: body.email || null,
         age: body.age || null,
@@ -110,7 +110,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
-    const user = db.users.update(body.id, {
+    const user = await db.users.update(body.id, {
       name: body.name,
       email: body.email,
       age: body.age,

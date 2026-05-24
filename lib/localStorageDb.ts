@@ -44,7 +44,7 @@ export type Match = {
 
 // Check if we have PostgreSQL connection
 const hasPostgresConnection = (): boolean => {
-  return typeof window === 'undefined' && process.env.DATABASE_URL !== undefined
+  return typeof window === 'undefined' && !!process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== ''
 }
 
 // Fallback to localStorage if PostgreSQL is not available (client-side)

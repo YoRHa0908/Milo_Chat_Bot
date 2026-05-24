@@ -49,17 +49,32 @@ const getPool = (): Pool => {
   if (!pool) {
     const connectionString = process.env.DATABASE_URL
     
+    // If DATABASE_URL is not set, return a dummy pool that will fail gracefully
+    // This allows the code to proceed and fall back to localStorage
     if (!connectionString) {
-      throw new Error('DATABASE_URL environment variable is not set')
+      // Create a pool with invalid connection string
+      // It will fail when connect() is called, but won't throw on creation
+      pool = new Pool({
+        connectionString: 'postgresql://invalid:invalid@localhost:5432/invalid',
+        ssl: false,
+        max: 1,
+        idleTimeoutMillis: 1000,
+        connectionTimeoutMillis: 1000,
+      })
+      
+      // Add error handler to prevent unhandled rejections
+      pool.on('error', (err) => {
+        console.error('PostgreSQL pool error (expected when DATABASE_URL is not set):', err.message)
+      })
+    } else {
+      pool = new Pool({
+        connectionString,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        max: 20, // Maximum number of clients in the pool
+        idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
+        connectionTimeoutMillis: 2000, // How long to wait for a connection
+      })
     }
-    
-    pool = new Pool({
-      connectionString,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 20, // Maximum number of clients in the pool
-      idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
-      connectionTimeoutMillis: 2000, // How long to wait for a connection
-    })
   }
   
   return pool
@@ -150,22 +165,28 @@ const generateId = (): string => {
 export const db = {
   users: {
     getAll: async (): Promise<UserProfile[]> => {
-      const client = await getPool().connect()
+      let client: PoolClient | null = null
       try {
+        client = await getPool().connect()
         const result = await client.query('SELECT * FROM users ORDER BY created_at DESC')
         return result.rows.map(row => ({
           ...row,
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }))
+      } catch (error) {
+        throw error
       } finally {
-        client.release()
+        if (client) {
+          client.release()
+        }
       }
     },
     
     getById: async (id: string): Promise<UserProfile | null> => {
-      const client = await getPool().connect()
+      let client: PoolClient | null = null
       try {
+        client = await getPool().connect()
         const result = await client.query('SELECT * FROM users WHERE id = $1', [id])
         if (result.rows.length === 0) return null
         
@@ -175,8 +196,13 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }
+      } catch (error) {
+        // Re-throw the error so it can be caught by localStorageDb.ts
+        throw error
       } finally {
-        client.release()
+        if (client) {
+          client.release()
+        }
       }
     },
     

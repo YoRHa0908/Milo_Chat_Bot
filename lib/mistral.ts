@@ -24,7 +24,14 @@ export async function generateChatResponse(
 
   try {
     // Add system prompt based on user profile
-    const systemPrompt = userProfile 
+    // Don't include the user's name if it's generic (User, New User, etc.)
+    const isGenericName = userProfile && 
+      (userProfile.name === 'User' || 
+       userProfile.name === 'New User' || 
+       userProfile.name === 'USER' ||
+       userProfile.name.toLowerCase() === 'user')
+    
+    const systemPrompt = userProfile && !isGenericName
       ? `You are Milo, a matchmaking assistant. Keep responses brief (1-2 sentences). Always start responses with "Milo:" or include your name. The user is ${userProfile.name}. Their interests: ${userProfile.interests?.join(', ') || 'various'}. Looking for: ${userProfile.looking_for?.join(', ') || 'connections'}. Ask concise questions to help find matches.`
       : `You are Milo, a matchmaking assistant. Keep all responses brief (1-2 sentences). Always start with "Milo:" or include your name. Ask short, direct questions to understand what the user wants in connections.`
 

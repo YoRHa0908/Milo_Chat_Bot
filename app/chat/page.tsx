@@ -139,6 +139,7 @@ export default function ChatPage() {
         body: JSON.stringify({
           message: userMessage,
           userId: userId,
+          userName: userName, // Send user name so AI can use it
           sessionId: sessionId || undefined
         })
       })

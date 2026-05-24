@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/localStorageDb.old'
+import { db } from '@/lib/localStorageDb'
 
 // Simple admin authentication (in production, use proper auth)
 const ADMIN_PASSWORD = 'milo-admin-2024'
@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all data for admin dashboard
-    let users = db.users.getAll()
-    let allMatches = db.matches.getAll()
-    const chatSessions = db.chatSessions.getAll()
+    let users = await db.users.getAll()
+    let allMatches = await db.matches.getAll()
+    const chatSessions = await db.chatSessions.getAll()
     
     // If no users exist, create some sample data for demo purposes
     if (users.length === 0) {

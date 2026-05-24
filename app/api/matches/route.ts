@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/localStorageDb.old'
+import { db } from '@/lib/localStorageDb'
 import { generateMatchSuggestions } from '@/lib/mistral'
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 })
     }
 
-    let matches = db.matches.getByUserId(userId)
+    let matches = await db.matches.getByUserId(userId)
 
     // Filter by status if specified
     if (status) {
@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
     matches.sort((a, b) => b.match_score - a.match_score)
 
     // Get user details for matched users
-    const matchesWithUsers = matches.map(match => {
+    const matchesWithUsers = await Promise.all(matches.map(async (match) => {
       // Determine which user is the "other" user (not the current user)
       const otherUserId = match.user_id === userId ? match.matched_user_id : match.user_id
-      const matchedUser = db.users.getById(otherUserId)
+      const matchedUser = await db.users.getById(otherUserId)
       
       return {
         ...match,
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         // Add metadata about which user is which
         is_current_user_initiator: match.user_id === userId
       }
-    })
+    }))
 
     return NextResponse.json({ matches: matchesWithUsers })
   } catch (error) {
@@ -52,25 +52,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current user profile - try from database first, then use data from request
-    let currentUser = db.users.getById(body.userId)
+    let currentUser = await db.users.getById(body.userId)
 
     if (!currentUser && body.userProfile) {
       // Use profile data sent from client
+      const userName = body.userProfile.name || 'User' // Use 'User' instead of 'New User'
       currentUser = {
         id: body.userId,
-        name: body.userProfile.name || 'New User',
+        name: userName,
         email: body.userProfile.email || null,
-        age: body.userProfile.age || 28,
-        location: body.userProfile.location || 'Unknown',
-        bio: body.userProfile.bio || 'Just joined Milo!',
-        interests: body.userProfile.interests || ['Technology', 'Music', 'Sports', 'Travel'],
-        looking_for: body.userProfile.looking_for || ['Friendship', 'Networking', 'Activity Partners'],
+        age: body.userProfile.age || null,
+        location: body.userProfile.location || null,
+        bio: body.userProfile.bio || null,
+        interests: body.userProfile.interests || [],
+        looking_for: body.userProfile.looking_for || [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
       
       // Also save this user to the database for future requests
-      db.users.create({
+      await db.users.create({
         name: currentUser.name,
         email: currentUser.email,
         age: currentUser.age,
@@ -80,30 +81,31 @@ export async function POST(request: NextRequest) {
         looking_for: currentUser.looking_for
       })
     } else if (!currentUser) {
-      // User doesn't exist in database and no profile data sent - use demo user data
+      // User doesn't exist in database and no profile data sent
+      // Try to get user from chat API or use a generic name
       currentUser = {
         id: body.userId,
-        name: 'New User',
+        name: 'User', // Generic name instead of 'New User'
         email: null,
-        age: 28,
-        location: 'Unknown',
-        bio: 'Just joined Milo!',
-        interests: ['Technology', 'Music', 'Sports', 'Travel'],
-        looking_for: ['Friendship', 'Networking', 'Activity Partners'],
+        age: null,
+        location: null,
+        bio: null,
+        interests: [],
+        looking_for: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
     }
 
     // Get existing matches to exclude
-    const existingMatches = db.matches.getByUserId(body.userId)
+    const existingMatches = await db.matches.getByUserId(body.userId)
     const excludedUserIds = [
       body.userId,
       ...(existingMatches?.map(m => m.matched_user_id) || [])
     ]
 
     // Get potential matches
-    const potentialMatches = db.users.getAllExcept(excludedUserIds).slice(0, 20)
+    const potentialMatches = (await db.users.getAllExcept(excludedUserIds)).slice(0, 20)
 
     if (potentialMatches.length === 0) {
       return NextResponse.json({ 
@@ -113,8 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use simple matching algorithm (more reliable than AI for deployment)
-    const createdMatches = potentialMatches
-      .map(matchedUser => {
+    const createdMatches = await Promise.all(potentialMatches.map(async (matchedUser) => {
         // DOUBLE-CHECK: Ensure user is not matching with themselves
         if (matchedUser.id === body.userId) {
           console.error('CRITICAL: User trying to match with themselves!', {
@@ -136,21 +137,24 @@ export async function POST(request: NextRequest) {
 
         const matchScore = totalInterests > 0 ? sharedInterests / totalInterests : 0.5
 
-        const match = db.matches.create(body.userId, matchedUser.id, matchScore)
+        const match = await db.matches.create(body.userId, matchedUser.id, matchScore)
         
         return {
           ...match,
           matched_user: matchedUser
         }
-      })
+      }))
+    
+    // Filter out null matches and sort
+    const filteredMatches = createdMatches
       .filter(match => match !== null) // Remove any null matches (self-matches)
       .sort((a, b) => b.match_score - a.match_score)
       .slice(0, 10) // Return top 10 matches (increased from 3)
 
     return NextResponse.json({
-      matches: createdMatches,
+      matches: filteredMatches,
       reasoning: 'Selected based on shared interests and compatibility',
-      totalCreated: createdMatches.length
+      totalCreated: filteredMatches.length
     })
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -167,14 +171,14 @@ export async function PUT(request: NextRequest) {
     }
 
     // First verify the match belongs to the user
-    const userMatches = db.matches.getByUserId(body.userId)
+    const userMatches = await db.matches.getByUserId(body.userId)
     const existingMatch = userMatches.find(match => match.id === body.matchId)
 
     if (!existingMatch) {
       return NextResponse.json({ error: 'Match not found or access denied' }, { status: 404 })
     }
 
-    const updatedMatch = db.matches.updateStatus(body.matchId, body.status)
+    const updatedMatch = await db.matches.updateStatus(body.matchId, body.status)
 
     if (!updatedMatch) {
       return NextResponse.json({ error: 'Failed to update match' }, { status: 500 })
