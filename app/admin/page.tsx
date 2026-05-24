@@ -22,8 +22,8 @@ type Match = {
   match_score: number
   status: string
   created_at: string
-  user: User
-  matched_user: User
+  user: User | null
+  matched_user: User | null
 }
 
 type Stats = {
@@ -78,7 +78,16 @@ export default function AdminPage() {
       if (response.ok) {
         setUsers(data.users || [])
         setMatches(data.matches || [])
-        setStats(data.stats || {})
+        
+        // Transform stats to match expected format
+        const apiStats = data.stats || {}
+        setStats({
+          totalUsers: apiStats.totalUsers || 0,
+          totalMatches: apiStats.totalMatches || 0,
+          activeMatches: apiStats.matchesByStatus?.accepted || 0,
+          pendingMatches: apiStats.matchesByStatus?.pending || 0,
+          userGrowth: [] // Not provided by API
+        })
       } else {
         setError(data.error || 'Failed to load admin data')
       }
@@ -393,12 +402,12 @@ export default function AdminPage() {
                       <td className="px-8 py-5">
                         <div>
                           <div className="font-medium text-white">
-                            {match.user?.name} ↔ {match.matched_user?.name}
+                            {match.user?.name || 'Unknown User'} ↔ {match.matched_user?.name || 'Unknown User'}
                           </div>
                           <div className="text-sm text-gray-400">
                             Shared interests: {
-                              match.user?.interests?.filter(interest => 
-                                match.matched_user?.interests?.includes(interest)
+                              (match.user?.interests || []).filter(interest => 
+                                (match.matched_user?.interests || []).includes(interest)
                               ).length || 0
                             }
                           </div>
