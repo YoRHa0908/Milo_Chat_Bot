@@ -8,6 +8,7 @@ import Link from 'next/link'
 export default function Home() {
   const [userCount, setUserCount] = useState(0)
   const [matchCount, setMatchCount] = useState(0)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     // Simulate fetching stats
@@ -15,6 +16,10 @@ export default function Home() {
       setUserCount(prev => Math.min(prev + 1, 127))
       setMatchCount(prev => Math.min(prev + 1, 42))
     }, 2000)
+
+    // Check if user is logged in
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('milo_user_id') : null
+    setIsLoggedIn(!!userId)
 
     return () => clearInterval(interval)
   }, [])
@@ -46,10 +51,10 @@ export default function Home() {
               </div>
             </Link>
             <Link 
-              href="/onboarding" 
+              href={isLoggedIn ? "/chat" : "/onboarding"} 
               className="relative overflow-hidden group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20"
             >
-              <span className="relative z-10">Get Started</span>
+              <span className="relative z-10">{isLoggedIn ? "Go to Chat" : "Get Started"}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </Link>
           </div>
@@ -80,12 +85,12 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-20">
             <Link 
-              href="/onboarding" 
+              href={isLoggedIn ? "/chat" : "/onboarding"} 
               className="group relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 text-white px-10 py-5 rounded-2xl text-xl font-semibold hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-500 hover:scale-105"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-700 via-purple-600 to-pink-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <span className="relative z-10 flex items-center justify-center space-x-3">
-                <span>Begin Your Journey</span>
+                <span>{isLoggedIn ? "Continue Your Journey" : "Begin Your Journey"}</span>
                 <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
               <div className="absolute inset-0 luxury-glow opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

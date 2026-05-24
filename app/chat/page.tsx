@@ -441,12 +441,25 @@ export default function ChatPage() {
                     <span>Premium Member</span>
                   </div>
                 </div>
-                <Link 
-                  href="/onboarding" 
-                  className="block text-center text-purple-400 hover:text-purple-300 text-sm font-medium mt-6 hover:scale-105 transition-transform duration-300"
-                >
-                  Edit Profile →
-                </Link>
+                <div className="flex flex-col space-y-3 mt-6">
+                  <Link 
+                    href="/onboarding?edit=true" 
+                    className="block text-center text-purple-400 hover:text-purple-300 text-sm font-medium hover:scale-105 transition-transform duration-300"
+                  >
+                    Edit Profile →
+                  </Link>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('milo_user_id')
+                      localStorage.removeItem('milo_user_name')
+                      localStorage.removeItem('milo_is_new_user')
+                      router.push('/onboarding')
+                    }}
+                    className="block text-center text-gray-400 hover:text-gray-300 text-sm font-medium hover:scale-105 transition-transform duration-300"
+                  >
+                    Create New Profile →
+                  </button>
+                </div>
               </div>
             </div>
 
