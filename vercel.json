@@ -6,17 +6,8 @@
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": {
-      "description": "Supabase project URL"
-    },
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
-      "description": "Supabase anonymous key"
-    },
-    "SUPABASE_SERVICE_ROLE_KEY": {
-      "description": "Supabase service role key"
-    },
     "MISTRAL_API_KEY": {
-      "description": "Mistral AI API key"
+      "description": "Mistral AI API key (optional)"
     },
     "NEXT_PUBLIC_APP_URL": {
       "description": "App URL (e.g., https://your-app.vercel.app)"

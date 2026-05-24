@@ -6,18 +6,18 @@ A production-grade chat-first AI product that helps users discover and get match
 
 ✅ **Public-facing web app** - Beautiful, responsive interface  
 ✅ **User onboarding flow** - Collects relevant profile information  
-✅ **Database integration** - Stores real user data (Supabase)  
-✅ **Chat interface** - Powered by Mistral AI free model  
+✅ **Local storage database** - Stores user data in browser localStorage  
+✅ **Chat interface** - Powered by Mistral AI free model (optional)  
 ✅ **Matching experience** - AI-powered match suggestions  
 ✅ **Admin/internal view** - Monitor users and matches  
-✅ **Deployable** - Ready for Vercel deployment  
+✅ **Deployable** - Ready for Vercel deployment (no database required)  
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (React) with TypeScript & Tailwind CSS
 - **Backend**: Next.js API Routes
-- **Database**: Supabase (PostgreSQL)
-- **AI**: Mistral AI (free tier)
+- **Database**: localStorage (browser storage) - no external database needed!
+- **AI**: Mistral AI (free tier, optional)
 - **Deployment**: Vercel (recommended)
 
 ## Getting Started
@@ -25,8 +25,7 @@ A production-grade chat-first AI product that helps users discover and get match
 ### 1. Prerequisites
 
 - Node.js 18+ and npm
-- Supabase account (free tier)
-- Mistral AI API key (free tier)
+- (Optional) Mistral AI API key (free tier)
 
 ### 2. Environment Setup
 
@@ -38,31 +37,16 @@ A production-grade chat-first AI product that helps users discover and get match
 2. Configure your environment variables in `.env.local`:
 
    ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-   # Mistral AI Configuration
+   # Mistral AI Configuration (Optional)
    MISTRAL_API_KEY=your_mistral_api_key
 
    # App Configuration
    NEXT_PUBLIC_APP_URL=http://localhost:3000
    ```
 
-### 3. Database Setup
+   **Note**: No Supabase required! The app uses localStorage for data storage.
 
-1. Create a new Supabase project at [supabase.com](https://supabase.com)
-2. Run the SQL schema from `supabase_schema.sql` in the Supabase SQL editor
-3. Get your project URL and anon key from Supabase settings → API
-
-### 4. Mistral AI Setup
-
-1. Sign up at [mistral.ai](https://mistral.ai)
-2. Get your API key from the dashboard
-3. Add it to your `.env.local` file
-
-### 5. Installation & Running
+### 3. Installation & Running
 
 ```bash
 # Install dependencies
@@ -90,17 +74,16 @@ milo-app/
 │   ├── admin/             # Admin panel
 │   └── page.tsx           # Landing page
 ├── lib/                   # Shared utilities
-│   ├── supabase.ts        # Supabase client
+│   ├── localStorageDb.ts  # localStorage-based database
 │   └── mistral.ts         # Mistral AI client
-├── public/                # Static assets
-└── supabase_schema.sql    # Database schema
+└── public/                # Static assets
 ```
 
 ## API Endpoints
 
 - `GET /api/users` - Get users
 - `POST /api/users` - Create user
-- `POST /api/chat` - Chat with Milo (Mistral AI)
+- `POST /api/chat` - Chat with Milo (Mistral AI or fallback responses)
 - `GET /api/matches` - Get user matches
 - `POST /api/matches` - Generate new matches
 - `GET /api/admin` - Admin dashboard data (protected)
@@ -109,54 +92,52 @@ milo-app/
 
 ### Environment Variables Setup
 
-Before deploying, you MUST set the following environment variables in your deployment platform:
+Before deploying, you can set the following environment variables in your deployment platform:
 
-#### Required Variables:
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL (from Supabase Dashboard → Project Settings → API)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon/public key (from same location)
-
-#### Optional but Recommended:
+#### Optional Variables:
 - `MISTRAL_API_KEY` - Your Mistral AI API key (from console.mistral.ai → API Keys)
 - `NEXT_PUBLIC_APP_URL` - Your deployed app URL (e.g., `https://your-app.vercel.app`)
+
+#### Important: No Supabase Required!
+The app uses localStorage, so you don't need to set `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
 ### Vercel (Recommended)
 
 1. Push your code to GitHub
 2. Go to [vercel.com](https://vercel.com) and import your GitHub repository
-3. In project settings, go to **Environment Variables** and add all required variables
+3. In project settings, go to **Environment Variables** and add optional variables
 4. Deploy!
 
 ### Troubleshooting Deployment Errors
 
 If you see this error: `"Invalid request: env.NEXT_PUBLIC_SUPABASE_URL should be string"`
 
-1. **Check your environment variables** in your deployment platform
-2. **Verify Supabase credentials** are correct:
-   - Go to your Supabase project dashboard
-   - Navigate to Project Settings → API
-   - Copy the exact "Project URL" and "anon/public" key
-3. **Redeploy** after updating environment variables
+1. **This means old Supabase configuration is still referenced**
+2. **Solution**: The app no longer needs Supabase! It uses localStorage
+3. **Remove** any references to `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from your deployment platform
+4. **Redeploy** after removing these variables
 
 ### Other Platforms
 
 The app is compatible with:
-- **Render** - Use Node.js environment, add environment variables in Dashboard → Environment
-- **Railway** - Use Node.js + PostgreSQL, add variables in Project → Variables
-- **Fly.io** - Use Docker deployment, set variables with `fly secrets set`
-- **Netlify** - Use Next.js build, add variables in Site Settings → Environment variables
+- **Render** - Use Node.js environment
+- **Railway** - Use Node.js environment
+- **Fly.io** - Use Docker deployment
+- **Netlify** - Use Next.js build
 
 ## Testing the Application
 
 1. **Landing Page** (`/`) - Overview and stats
-2. **Onboarding** (`/onboarding`) - Create user profile
-3. **Chat** (`/chat`) - Talk to Milo AI assistant
+2. **Onboarding** (`/onboarding`) - Create user profile (stored in localStorage)
+3. **Chat** (`/chat`) - Talk to Milo AI assistant (works with or without API key)
 4. **Matches** (`/matches`) - View and manage matches
 5. **Admin** (`/admin`) - Internal view (password: `milo-admin-2024`)
 
 ## Key Features Implemented
 
 ### AI-Powered Chat
-- Real-time conversation with Mistral AI
+- Real-time conversation with Mistral AI (optional)
+- Fallback responses when no API key is provided
 - Context-aware responses based on user profile
 - Session management and history
 
@@ -169,6 +150,7 @@ The app is compatible with:
 - Complete onboarding flow
 - Profile creation and editing
 - Interest-based matching preferences
+- **Data stored in browser localStorage** - no database required!
 
 ### Admin Dashboard
 - User and match monitoring
@@ -177,10 +159,10 @@ The app is compatible with:
 
 ## Development Notes
 
-- Uses localStorage for user session (demo purposes)
-- In production, implement proper authentication
-- Mistral AI free tier has rate limits
-- Supabase free tier is sufficient for MVP
+- Uses localStorage for user data persistence (resets on browser clear)
+- Mistral AI is optional - chat works with fallback responses
+- No external database dependencies
+- Easy to deploy on any platform
 
 ## License
 
