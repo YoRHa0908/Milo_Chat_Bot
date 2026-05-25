@@ -1,0 +1,379 @@
+{
+  "users": [
+    {
+      "id": "user-1779675798485-1",
+      "name": "Alex Johnson",
+      "email": "alex.johnson@example.com",
+      "age": 28,
+      "location": "New York",
+      "bio": "Software engineer who loves hiking and photography. Always up for an adventure!",
+      "interests": [
+        "hiking",
+        "photography",
+        "coding",
+        "travel"
+      ],
+      "looking_for": [
+        "friendship",
+        "dating"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "user-1779675798485-2",
+      "name": "Maya Chen",
+      "email": "maya.chen@example.com",
+      "age": 32,
+      "location": "San Francisco",
+      "bio": "Graphic designer and food enthusiast. Love trying new restaurants and cooking classes.",
+      "interests": [
+        "design",
+        "cooking",
+        "art",
+        "yoga"
+      ],
+      "looking_for": [
+        "friendship",
+        "networking"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "user-1779675798485-3",
+      "name": "David Wilson",
+      "email": "david.wilson@example.com",
+      "age": 25,
+      "location": "Chicago",
+      "bio": "Music producer and DJ. Passionate about electronic music and live events.",
+      "interests": [
+        "music",
+        "DJing",
+        "concerts",
+        "gaming"
+      ],
+      "looking_for": [
+        "friendship",
+        "activity partners"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "user-1779675798485-4",
+      "name": "Sophia Rodriguez",
+      "email": "sophia.rodriguez@example.com",
+      "age": 30,
+      "location": "Miami",
+      "bio": "Marine biologist who loves scuba diving and environmental conservation.",
+      "interests": [
+        "scuba diving",
+        "environment",
+        "science",
+        "reading"
+      ],
+      "looking_for": [
+        "dating",
+        "activity partners"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "user-1779675798485-5",
+      "name": "James Miller",
+      "email": "james.miller@example.com",
+      "age": 35,
+      "location": "Seattle",
+      "bio": "Coffee shop owner and book lover. Always reading something new.",
+      "interests": [
+        "coffee",
+        "reading",
+        "writing",
+        "hiking"
+      ],
+      "looking_for": [
+        "friendship",
+        "dating"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "user-1779675798485-6",
+      "name": "Emma Thompson",
+      "email": "emma.thompson@example.com",
+      "age": 27,
+      "location": "Austin",
+      "bio": "Yoga instructor and wellness coach. Passionate about mindfulness and healthy living.",
+      "interests": [
+        "yoga",
+        "meditation",
+        "wellness",
+        "cooking"
+      ],
+      "looking_for": [
+        "friendship",
+        "networking"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "user-1779675798485-7",
+      "name": "Carlos Garcia",
+      "email": "carlos.garcia@example.com",
+      "age": 29,
+      "location": "Los Angeles",
+      "bio": "Film director and screenwriter. Love storytelling in all forms.",
+      "interests": [
+        "film",
+        "writing",
+        "photography",
+        "travel"
+      ],
+      "looking_for": [
+        "networking",
+        "activity partners"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "user-1779675798485-8",
+      "name": "Olivia Smith",
+      "email": "olivia.smith@example.com",
+      "age": 31,
+      "location": "Boston",
+      "bio": "Architect who enjoys urban exploration and historical preservation.",
+      "interests": [
+        "architecture",
+        "history",
+        "travel",
+        "photography"
+      ],
+      "looking_for": [
+        "dating",
+        "friendship"
+      ],
+      "created_at": "2026-05-25T02:23:18.485Z",
+      "updated_at": "2026-05-25T02:23:18.485Z"
+    },
+    {
+      "id": "1779699143594pbbxpnyv5",
+      "created_at": "2026-05-25T08:52:23.718Z",
+      "updated_at": "2026-05-25T08:55:03.896Z",
+      "name": "tiger",
+      "email": "tiger@gmail.com",
+      "age": 34,
+      "location": "US",
+      "bio": "I am looking for a partner",
+      "interests": [
+        "Technology",
+        "Travel",
+        "Music",
+        "Reading"
+      ],
+      "looking_for": [
+        "Dating"
+      ]
+    }
+  ],
+  "chatSessions": [
+    {
+      "id": "17796991581948z7c76y3j",
+      "user_id": "1779699143594pbbxpnyv5",
+      "created_at": "2026-05-25T08:52:38.194Z",
+      "updated_at": "2026-05-25T08:52:38.194Z"
+    }
+  ],
+  "chatMessages": [
+    {
+      "id": "1779699158206f7m3wt1ly",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "I am looking for boy friend",
+      "created_at": "2026-05-25T08:52:38.206Z"
+    },
+    {
+      "id": "1779699158216aqwv6pgiz",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: Hey tiger! 👋 I'm Milo, your warm and friendly matchmaking assistant. I'm absolutely over the moon to help you find meaningful connections that light up your life! To get us started, could you tell me what kind of connection you're hoping to find? Friendship, dating, networking, or maybe activity partners? Whatever feels right for you, my friend!",
+      "created_at": "2026-05-25T08:52:38.216Z"
+    },
+    {
+      "id": "1779699178860sk67hqlgi",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "dating",
+      "created_at": "2026-05-25T08:52:58.860Z"
+    },
+    {
+      "id": "17796991788751jpy5pam2",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: That's absolutely wonderful! 😊 I'm so proud of you for taking this beautiful step toward connection. Now I'd love to get to know the amazing person you are better. What are 2-3 things that make your heart sing or that you're really passionate about? (Think hobbies, activities, or anything that brings you pure joy!)",
+      "created_at": "2026-05-25T08:52:58.875Z"
+    },
+    {
+      "id": "1779699227008vueyryl8a",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "music",
+      "created_at": "2026-05-25T08:53:47.008Z"
+    },
+    {
+      "id": "17796992270187kujzkt1t",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: Oh, my heart is smiling! 🌟 Music is such a beautiful way to connect with kindred spirits. Now, to help me find the perfect matches for your wonderful soul, what age range feels most comfortable and welcoming to you? (e.g., 25-35, 30-40, or \"any age is fine with me!\")",
+      "created_at": "2026-05-25T08:53:47.018Z"
+    },
+    {
+      "id": "17796992357662jy8yn9vo",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "20-27",
+      "created_at": "2026-05-25T08:53:55.766Z"
+    },
+    {
+      "id": "1779699235781gwfsui6si",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: Perfect! 💫 Thank you so much for sharing that with me, it means a lot. Now, how do you feel about location? Are you hoping to connect with wonderful people nearby, or are you open to meeting amazing souls from further away too? Either way is beautiful!",
+      "created_at": "2026-05-25T08:53:55.781Z"
+    },
+    {
+      "id": "1779699259563id82ifcxm",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "Hi",
+      "created_at": "2026-05-25T08:54:19.563Z"
+    },
+    {
+      "id": "17796992595754y61ei0e9",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: Whatever feels right in your heart! 🙌 Are you looking for connections close by, or are you open to meeting wonderful people from anywhere? Both are absolutely beautiful and valid choices!",
+      "created_at": "2026-05-25T08:54:19.575Z"
+    },
+    {
+      "id": "17796992775609ck8c8x56",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "close by",
+      "created_at": "2026-05-25T08:54:37.560Z"
+    },
+    {
+      "id": "1779699277572zmg2pkrhb",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: Got it! 📍 Location preference lovingly noted. Now for my absolute favorite question (and the last one, I promise!): When you think about connecting with someone, what qualities really make your heart sing? Things like a great sense of humor, kindness, ambition, honesty, adventurous spirit... what speaks to the deepest parts of your beautiful soul?",
+      "created_at": "2026-05-25T08:54:37.572Z"
+    },
+    {
+      "id": "1779699316386rdnd1rrj9",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "looking for a parner",
+      "created_at": "2026-05-25T08:55:16.386Z"
+    },
+    {
+      "id": "1779699316398a0bml6yye",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: This is my favorite question because it tells me so much about the beautiful, wonderful person you are! 😊 What qualities make your heart dance in a person? A warm heart, a quick wit, adventurous spirit, deep conversations, creative soul, gentle kindness... what makes someone truly special and meaningful to you?",
+      "created_at": "2026-05-25T08:55:16.398Z"
+    },
+    {
+      "id": "1779699333799nvj9ub3lb",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "user",
+      "content": "i enjoy mucis",
+      "created_at": "2026-05-25T08:55:33.799Z"
+    },
+    {
+      "id": "1779699333814dnhuy2ctu",
+      "session_id": "17796991581948z7c76y3j",
+      "role": "assistant",
+      "content": "Milo: This is my favorite question because it tells me so much about the beautiful, wonderful person you are! 😊 What qualities make your heart dance in a person? A warm heart, a quick wit, adventurous spirit, deep conversations, creative soul, gentle kindness... what makes someone truly special and meaningful to you?",
+      "created_at": "2026-05-25T08:55:33.814Z"
+    }
+  ],
+  "matches": [
+    {
+      "id": "177969918200587anu6i04",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-1",
+      "match_score": 0,
+      "status": "accepted",
+      "created_at": "2026-05-25T08:53:02.005Z",
+      "updated_at": "2026-05-25T08:53:11.728Z"
+    },
+    {
+      "id": "17796991820164zjfupd06",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-2",
+      "match_score": 0,
+      "status": "accepted",
+      "created_at": "2026-05-25T08:53:02.016Z",
+      "updated_at": "2026-05-25T08:53:12.374Z"
+    },
+    {
+      "id": "1779699182028bu8l3s9mp",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-3",
+      "match_score": 0,
+      "status": "accepted",
+      "created_at": "2026-05-25T08:53:02.028Z",
+      "updated_at": "2026-05-25T08:53:13.081Z"
+    },
+    {
+      "id": "1779699182041q5dnaaelx",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-4",
+      "match_score": 0,
+      "status": "pending",
+      "created_at": "2026-05-25T08:53:02.041Z",
+      "updated_at": "2026-05-25T08:53:02.041Z"
+    },
+    {
+      "id": "1779699182052ys7wadpv4",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-5",
+      "match_score": 0,
+      "status": "pending",
+      "created_at": "2026-05-25T08:53:02.052Z",
+      "updated_at": "2026-05-25T08:53:02.052Z"
+    },
+    {
+      "id": "1779699182064ej41a3o9h",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-6",
+      "match_score": 0,
+      "status": "pending",
+      "created_at": "2026-05-25T08:53:02.064Z",
+      "updated_at": "2026-05-25T08:53:02.064Z"
+    },
+    {
+      "id": "1779699182075fh1e8k8hg",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-7",
+      "match_score": 0,
+      "status": "pending",
+      "created_at": "2026-05-25T08:53:02.075Z",
+      "updated_at": "2026-05-25T08:53:02.075Z"
+    },
+    {
+      "id": "1779699182085s3dhx09qc",
+      "user_id": "1779699143594pbbxpnyv5",
+      "matched_user_id": "user-1779675798485-8",
+      "match_score": 0,
+      "status": "pending",
+      "created_at": "2026-05-25T08:53:02.085Z",
+      "updated_at": "2026-05-25T08:53:02.085Z"
+    }
+  ]
+}
