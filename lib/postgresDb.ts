@@ -365,10 +365,21 @@ export const db = {
     
     getAllExcept: async (excludedIds: string[]): Promise<UserProfile[]> => {
       return withPostgres(async (client) => {
-        const result = await client.query(
-          'SELECT * FROM users WHERE id != ALL($1) ORDER BY created_at DESC',
-          [excludedIds]
-        )
+        // Handle empty excludedIds array
+        if (!excludedIds || excludedIds.length === 0) {
+          const result = await client.query('SELECT * FROM users ORDER BY created_at DESC')
+          return result.rows.map(row => ({
+            ...row,
+            interests: row.interests || [],
+            looking_for: row.looking_for || []
+          }))
+        }
+        
+        // Create placeholders for the query
+        const placeholders = excludedIds.map((_, index) => `$${index + 1}`).join(', ')
+        const query = `SELECT * FROM users WHERE id NOT IN (${placeholders}) ORDER BY created_at DESC`
+        
+        const result = await client.query(query, excludedIds)
         return result.rows.map(row => ({
           ...row,
           interests: row.interests || [],
@@ -514,6 +525,23 @@ export const db = {
            WHERE (user_id = $1 AND matched_user_id = $2)
               OR (user_id = $2 AND matched_user_id = $1)`,
           [userId, matchedUserId]
+        )
+        
+        return result.rows[0] || null
+      })
+    },
+    
+    // Get current match (most recent accepted match)
+    getCurrentMatch: async (userId: string): Promise<Match | null> => {
+      return withPostgres(async (client) => {
+        // Get the most recent accepted match for the user
+        const result = await client.query(
+          `SELECT * FROM matches 
+           WHERE (user_id = $1 OR matched_user_id = $1)
+           AND status = 'accepted'
+           ORDER BY updated_at DESC
+           LIMIT 1`,
+          [userId]
         )
         
         return result.rows[0] || null
