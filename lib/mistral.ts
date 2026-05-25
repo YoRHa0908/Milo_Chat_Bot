@@ -1,6 +1,7 @@
 import { Mistral } from '@mistralai/mistralai'
 
-const apiKey = process.env.MISTRAL_API_KEY
+// Safely get API key from environment
+const apiKey = typeof process !== 'undefined' && process.env ? process.env.MISTRAL_API_KEY : undefined
 
 if (!apiKey) {
   // MISTRAL_API_KEY is not set. Using mock AI responses.

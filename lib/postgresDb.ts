@@ -56,7 +56,8 @@ let pool: Pool | null = null
 
 const getPool = (): Pool | null => {
   if (!pool) {
-    const connectionString = process.env.DATABASE_URL
+    // Safely get DATABASE_URL from environment
+    const connectionString = typeof process !== 'undefined' && process.env ? process.env.DATABASE_URL : undefined
     
     // If DATABASE_URL is not set, return null to indicate no PostgreSQL connection
     if (!connectionString || connectionString.trim() === '') {
@@ -66,7 +67,7 @@ const getPool = (): Pool | null => {
     try {
       pool = new Pool({
         connectionString,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        ssl: (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production') ? { rejectUnauthorized: false } : false,
         max: 20, // Maximum number of clients in the pool
         idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
         connectionTimeoutMillis: 2000, // How long to wait for a connection
@@ -394,6 +395,13 @@ export const db = {
           interests: row.interests || [],
           looking_for: row.looking_for || []
         }))
+      })
+    },
+    
+    delete: async (id: string): Promise<boolean> => {
+      return withPostgres(async (client) => {
+        const result = await client.query('DELETE FROM users WHERE id = $1 RETURNING id', [id])
+        return result.rows.length > 0
       })
     }
   },

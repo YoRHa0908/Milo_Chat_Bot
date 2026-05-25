@@ -44,7 +44,11 @@ export type Match = {
 
 // Check if we have PostgreSQL connection
 const hasPostgresConnection = (): boolean => {
-  return typeof window === 'undefined' && !!process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== ''
+  // Check if we're in a Node.js environment and have DATABASE_URL
+  if (typeof window === 'undefined' && typeof process !== 'undefined' && process.env) {
+    return !!process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== ''
+  }
+  return false
 }
 
 // In-memory store for server-side fallback (when PostgreSQL is not available)
@@ -62,83 +66,90 @@ const serverMemoryStore: {
 
 // Initialize server memory store from backup file if it exists
 if (typeof window === 'undefined') {
-  try {
-    const fs = require('fs')
-    const path = require('path')
-    const backupFile = path.join(process.cwd(), '.localStorageBackup.json')
-    
-    if (fs.existsSync(backupFile)) {
-      const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'))
-      
-      if (backupData.users) serverMemoryStore.users = backupData.users
-      if (backupData.chatSessions) serverMemoryStore.chatSessions = backupData.chatSessions
-      if (backupData.chatMessages) serverMemoryStore.chatMessages = backupData.chatMessages
-      if (backupData.matches) serverMemoryStore.matches = backupData.matches
-      
-      console.log(`Loaded ${serverMemoryStore.users.length} users from backup file`)
-    }
-    
-    // If no users exist, create demo users
-    if (serverMemoryStore.users.length === 0) {
-      const demoUsers = [
-        {
-          id: 'demo-user-1',
-          name: 'Alex Johnson',
-          email: 'alex@example.com',
-          age: 28,
-          location: 'New York, USA',
-          bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
-          interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
-          looking_for: ['Friendship', 'Networking', 'Activity Partners'],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 'demo-user-2',
-          name: 'Sam Taylor',
-          email: 'sam@example.com',
-          age: 32,
-          location: 'London, UK',
-          bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
-          interests: ['Art', 'Movies', 'Cooking', 'Travel'],
-          looking_for: ['Dating', 'Creative Collaboration'],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 'demo-user-3',
-          name: 'Jordan Lee',
-          email: 'jordan@example.com',
-          age: 25,
-          location: 'Tokyo, Japan',
-          bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
-          interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
-          looking_for: ['Friendship', 'Study Buddies', 'Travel Companions'],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+  // Use an async IIFE to handle dynamic imports
+  ;(async () => {
+    try {
+      // Check if we're in a Node.js environment before trying to import fs/path
+      if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+        // Use dynamic import for Node.js modules to avoid issues in browser builds
+        const fs = await import('fs')
+        const path = await import('path')
+        const backupFile = path.join(process.cwd(), '.localStorageBackup.json')
+        
+        if (fs.existsSync(backupFile)) {
+          const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'))
+          
+          if (backupData.users) serverMemoryStore.users = backupData.users
+          if (backupData.chatSessions) serverMemoryStore.chatSessions = backupData.chatSessions
+          if (backupData.chatMessages) serverMemoryStore.chatMessages = backupData.chatMessages
+          if (backupData.matches) serverMemoryStore.matches = backupData.matches
+          
+          console.log(`Loaded ${serverMemoryStore.users.length} users from backup file`)
         }
-      ]
-      
-      serverMemoryStore.users = demoUsers
-      console.log(`Created ${demoUsers.length} demo users for fallback storage`)
-      
-      // Save to backup file
-      const backupData = {
-        users: serverMemoryStore.users,
-        chatSessions: serverMemoryStore.chatSessions,
-        chatMessages: serverMemoryStore.chatMessages,
-        matches: serverMemoryStore.matches
+        
+        // If no users exist, create demo users
+        if (serverMemoryStore.users.length === 0) {
+          const demoUsers = [
+            {
+              id: 'demo-user-1',
+              name: 'Alex Johnson',
+              email: 'alex@example.com',
+              age: 28,
+              location: 'New York, USA',
+              bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
+              interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
+              looking_for: ['Friendship', 'Networking', 'Activity Partners'],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+            {
+              id: 'demo-user-2',
+              name: 'Sam Taylor',
+              email: 'sam@example.com',
+              age: 32,
+              location: 'London, UK',
+              bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
+              interests: ['Art', 'Movies', 'Cooking', 'Travel'],
+              looking_for: ['Dating', 'Creative Collaboration'],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            },
+            {
+              id: 'demo-user-3',
+              name: 'Jordan Lee',
+              email: 'jordan@example.com',
+              age: 25,
+              location: 'Tokyo, Japan',
+              bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
+              interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
+              looking_for: ['Friendship', 'Study Buddies', 'Travel Companions'],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          ]
+          
+          serverMemoryStore.users = demoUsers
+          console.log(`Created ${demoUsers.length} demo users for fallback storage`)
+          
+          // Save to backup file
+          const backupData = {
+            users: serverMemoryStore.users,
+            chatSessions: serverMemoryStore.chatSessions,
+            chatMessages: serverMemoryStore.chatMessages,
+            matches: serverMemoryStore.matches
+          }
+          
+          fs.writeFileSync(backupFile, JSON.stringify(backupData, null, 2))
+        }
       }
-      
-      fs.writeFileSync(backupFile, JSON.stringify(backupData, null, 2))
+    } catch (error) {
+      console.log('No backup file found or error loading backup:', error instanceof Error ? error.message : String(error))
     }
-  } catch (error) {
-    console.log('No backup file found or error loading backup:', error instanceof Error ? error.message : String(error))
-  }
+  })()
 }
 
 // Helper function to save to appropriate storage
-export const saveToStorage = (key: string, data: any): void => {
+export const saveToStorage = async (key: string, data: any): Promise<void> => {
   if (typeof window === 'undefined') {
     // Server-side: update in-memory store and backup file
     switch (key) {
@@ -156,22 +167,26 @@ export const saveToStorage = (key: string, data: any): void => {
         break
     }
     
-    // Save to backup file
+    // Save to backup file - only if we're in a Node.js environment
     try {
-      const fs = require('fs')
-      const path = require('path')
-      const backupFile = path.join(process.cwd(), '.localStorageBackup.json')
-      
-      const backupData = {
-        users: serverMemoryStore.users,
-        chatSessions: serverMemoryStore.chatSessions,
-        chatMessages: serverMemoryStore.chatMessages,
-        matches: serverMemoryStore.matches
+      // Check if we're in Node.js environment before trying to import fs/path
+      if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+        // Use dynamic import for Node.js modules
+        const fs = await import('fs')
+        const path = await import('path')
+        const backupFile = path.join(process.cwd(), '.localStorageBackup.json')
+        
+        const backupData = {
+          users: serverMemoryStore.users,
+          chatSessions: serverMemoryStore.chatSessions,
+          chatMessages: serverMemoryStore.chatMessages,
+          matches: serverMemoryStore.matches
+        }
+        
+        fs.writeFileSync(backupFile, JSON.stringify(backupData, null, 2))
       }
-      
-      fs.writeFileSync(backupFile, JSON.stringify(backupData, null, 2))
     } catch (error) {
-      // Error saving to backup file
+      // Error saving to backup file - silent fail
     }
   } else {
     // Client-side: update localStorage
@@ -219,7 +234,7 @@ const fallbackStorage = {
       return users.find(user => user.id === id) || null
     },
     
-    create: (userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): UserProfile => {
+    create: async (userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
       const users = fallbackStorage.users.getAll()
       const newUser: UserProfile = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
@@ -228,11 +243,11 @@ const fallbackStorage = {
         ...userData
       }
       users.push(newUser)
-      saveToStorage('users', users)
+      await saveToStorage('users', users)
       return newUser
     },
     
-    createWithId: (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): UserProfile => {
+    createWithId: async (id: string, userData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
       const users = fallbackStorage.users.getAll()
       const newUser: UserProfile = {
         id,
@@ -241,11 +256,11 @@ const fallbackStorage = {
         ...userData
       }
       users.push(newUser)
-      saveToStorage('users', users)
+      await saveToStorage('users', users)
       return newUser
     },
     
-    update: (id: string, updates: Partial<UserProfile>): UserProfile | null => {
+    update: async (id: string, updates: Partial<UserProfile>): Promise<UserProfile | null> => {
       const users = fallbackStorage.users.getAll()
       const index = users.findIndex(user => user.id === id)
       
@@ -257,7 +272,7 @@ const fallbackStorage = {
         updated_at: new Date().toISOString()
       }
       
-      saveToStorage('users', users)
+      await saveToStorage('users', users)
       return users[index]
     },
     
@@ -271,13 +286,13 @@ const fallbackStorage = {
       return users.filter(user => !excludedIds.includes(user.id))
     },
     
-    delete: (id: string): boolean => {
+    delete: async (id: string): Promise<boolean> => {
       const users = fallbackStorage.users.getAll()
       const initialLength = users.length
       const filteredUsers = users.filter(user => user.id !== id)
       
       if (filteredUsers.length < initialLength) {
-        saveToStorage('users', filteredUsers)
+        await saveToStorage('users', filteredUsers)
         return true
       }
       return false
@@ -297,7 +312,7 @@ const fallbackStorage = {
       )[0] || null
     },
     
-    create: (userId: string): ChatSession => {
+    create: async (userId: string): Promise<ChatSession> => {
       const sessions = fallbackStorage.chatSessions.getAll()
       const newSession: ChatSession = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
@@ -306,7 +321,7 @@ const fallbackStorage = {
         updated_at: new Date().toISOString()
       }
       sessions.push(newSession)
-      saveToStorage('chatSessions', sessions)
+      await saveToStorage('chatSessions', sessions)
       return newSession
     },
     
@@ -326,7 +341,7 @@ const fallbackStorage = {
         )
     },
     
-    create: (sessionId: string, role: 'user' | 'assistant' | 'system', content: string): ChatMessage => {
+    create: async (sessionId: string, role: 'user' | 'assistant' | 'system', content: string): Promise<ChatMessage> => {
       const allMessages = fallbackStorage.chatMessages.getAll()
       const newMessage: ChatMessage = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
@@ -336,7 +351,7 @@ const fallbackStorage = {
         created_at: new Date().toISOString()
       }
       allMessages.push(newMessage)
-      saveToStorage('chatMessages', allMessages)
+      await saveToStorage('chatMessages', allMessages)
       return newMessage
     },
     
@@ -357,7 +372,7 @@ const fallbackStorage = {
       )
     },
     
-    create: (userId: string, matchedUserId: string, matchScore: number): Match => {
+    create: async (userId: string, matchedUserId: string, matchScore: number): Promise<Match> => {
       if (userId === matchedUserId) {
         console.error('CRITICAL ERROR: Attempted to create self-match', { userId, matchedUserId })
         throw new Error('Cannot create match with yourself')
@@ -373,7 +388,7 @@ const fallbackStorage = {
       if (existingMatch) {
         existingMatch.match_score = matchScore
         existingMatch.updated_at = new Date().toISOString()
-        saveToStorage('matches', matches)
+        await saveToStorage('matches', matches)
         return existingMatch
       }
 
@@ -387,11 +402,11 @@ const fallbackStorage = {
         updated_at: new Date().toISOString()
       }
       matches.push(newMatch)
-      saveToStorage('matches', matches)
+      await saveToStorage('matches', matches)
       return newMatch
     },
     
-    updateStatus: (matchId: string, status: Match['status']): Match | null => {
+    updateStatus: async (matchId: string, status: Match['status']): Promise<Match | null> => {
       const matches = fallbackStorage.matches.getAll()
       const index = matches.findIndex(match => match.id === matchId)
       
@@ -403,7 +418,7 @@ const fallbackStorage = {
         updated_at: new Date().toISOString()
       }
       
-      saveToStorage('matches', matches)
+      await saveToStorage('matches', matches)
       return matches[index]
     },
     
@@ -495,6 +510,19 @@ export const db = {
         }
       }
       return fallbackStorage.users.getAllExcept(excludedIds)
+    },
+    
+    delete: async (id: string): Promise<boolean> => {
+      if (hasPostgresConnection()) {
+        try {
+          // PostgreSQL delete method needs to be implemented
+          // For now, fall back to fallback storage
+          return fallbackStorage.users.delete(id)
+        } catch (error) {
+          console.error('PostgreSQL error, falling back to fallback storage:', error)
+        }
+      }
+      return fallbackStorage.users.delete(id)
     }
   },
   
