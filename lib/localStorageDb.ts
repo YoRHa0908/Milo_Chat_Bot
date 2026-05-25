@@ -78,7 +78,7 @@ if (typeof window === 'undefined') {
       console.log(`Loaded ${serverMemoryStore.users.length} users from backup file`)
     }
   } catch (error) {
-    console.log('No backup file found or error loading backup:', error.message)
+    console.log('No backup file found or error loading backup:', error instanceof Error ? error.message : String(error))
   }
 }
 
@@ -116,7 +116,7 @@ export const saveToStorage = (key: string, data: any): void => {
       
       fs.writeFileSync(backupFile, JSON.stringify(backupData, null, 2))
     } catch (error) {
-      console.log('Error saving to backup file:', error.message)
+      console.log('Error saving to backup file:', error instanceof Error ? error.message : String(error))
     }
   } else {
     // Client-side: update localStorage

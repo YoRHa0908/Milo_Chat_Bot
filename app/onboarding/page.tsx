@@ -267,6 +267,27 @@ export default function OnboardingPage() {
     }
   }
 
+  const handleNewChat = () => {
+    // Clear any existing chat sessions and messages from localStorage
+    localStorage.removeItem('milo_chat_sessions')
+    localStorage.removeItem('milo_chat_messages')
+    
+    // Get current user ID and name
+    const currentUserId = localStorage.getItem('milo_user_id')
+    const currentUserName = localStorage.getItem('milo_user_name')
+    
+    if (!currentUserId || !currentUserName) {
+      alert('Please create or select a profile first')
+      return
+    }
+    
+    // Set flag to indicate this is a new chat (not a new user)
+    localStorage.removeItem('milo_is_new_user')
+    
+    // Redirect to chat with fresh conversation
+    router.push('/chat')
+  }
+
   const nextStep = () => {
     if (step === 1 && !formData.name.trim()) {
       alert('Please enter your name')
