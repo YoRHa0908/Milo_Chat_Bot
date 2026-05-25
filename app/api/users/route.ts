@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ users })
     }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    // Unexpected error
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    // Unexpected error
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -126,7 +126,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ user })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    // Unexpected error
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -172,7 +172,7 @@ export async function DELETE(request: NextRequest) {
       deletedUser
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    // Unexpected error
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

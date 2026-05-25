@@ -51,7 +51,6 @@ const getPool = (): Pool | null => {
     
     // If DATABASE_URL is not set, return null to indicate no PostgreSQL connection
     if (!connectionString || connectionString.trim() === '') {
-      console.log('PostgreSQL: DATABASE_URL not set, using localStorage fallback')
       return null
     }
     
@@ -64,18 +63,15 @@ const getPool = (): Pool | null => {
         connectionTimeoutMillis: 2000, // How long to wait for a connection
       })
       
-      // Test connection
+      // Test connection silently
       pool.connect((err, client, release) => {
         if (err) {
-          console.error('PostgreSQL connection test failed:', err.message)
           pool = null // Reset pool on connection failure
         } else {
-          console.log('PostgreSQL connection successful')
           release()
         }
       })
     } catch (error) {
-      console.error('PostgreSQL pool creation failed:', error)
       pool = null
     }
   }
@@ -104,7 +100,6 @@ const withPostgres = async <T>(
 export const initializeDatabase = async (): Promise<void> => {
   const pool = getPool()
   if (!pool) {
-    console.log('PostgreSQL not available, skipping database initialization')
     return
   }
   
@@ -172,10 +167,7 @@ export const initializeDatabase = async (): Promise<void> => {
       CREATE INDEX IF NOT EXISTS idx_matches_matched_user_id ON matches(matched_user_id);
       CREATE INDEX IF NOT EXISTS idx_matches_user_matched ON matches(user_id, matched_user_id);
     `)
-    
-    console.log('Database tables initialized successfully')
   } catch (error) {
-    console.error('Error initializing database:', error)
     throw error
   } finally {
     client.release()
@@ -479,7 +471,6 @@ export const db = {
     create: async (userId: string, matchedUserId: string, matchScore: number): Promise<Match> => {
       // Prevent users from matching with themselves
       if (userId === matchedUserId) {
-        console.error('CRITICAL ERROR: Attempted to create self-match', { userId, matchedUserId })
         throw new Error('Cannot create match with yourself')
       }
 
@@ -535,7 +526,6 @@ export const db = {
 export const initializeDemoData = async (): Promise<void> => {
   const pool = getPool()
   if (!pool) {
-    console.log('PostgreSQL not available, skipping demo data initialization')
     return
   }
   
@@ -547,8 +537,6 @@ export const initializeDemoData = async (): Promise<void> => {
     const userCount = parseInt(usersResult.rows[0].count)
     
     if (userCount === 0) {
-      console.log('Initializing demo data for PostgreSQL...')
-      
       // Create demo users
       const demoUsers = [
         {
@@ -586,11 +574,9 @@ export const initializeDemoData = async (): Promise<void> => {
       for (const userData of demoUsers) {
         await db.users.createWithId(userData.id, userData)
       }
-      
-      console.log('Demo data initialized successfully')
     }
   } catch (error) {
-    console.error('Error initializing demo data:', error)
+    // Silently handle demo data initialization errors
   } finally {
     client.release()
   }
@@ -598,6 +584,6 @@ export const initializeDemoData = async (): Promise<void> => {
 
 // Initialize database on module load (server-side only)
 if (typeof window === 'undefined') {
-  initializeDatabase().catch(console.error)
-  initializeDemoData().catch(console.error)
+  initializeDatabase().catch(() => {})
+  initializeDemoData().catch(() => {})
 }

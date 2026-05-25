@@ -116,7 +116,7 @@ export const saveToStorage = (key: string, data: any): void => {
       
       fs.writeFileSync(backupFile, JSON.stringify(backupData, null, 2))
     } catch (error) {
-      console.log('Error saving to backup file:', error instanceof Error ? error.message : String(error))
+      // Error saving to backup file
     }
   } else {
     // Client-side: update localStorage

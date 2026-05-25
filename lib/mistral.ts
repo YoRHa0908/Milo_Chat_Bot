@@ -3,7 +3,7 @@ import { Mistral } from '@mistralai/mistralai'
 const apiKey = process.env.MISTRAL_API_KEY
 
 if (!apiKey) {
-  console.warn('MISTRAL_API_KEY is not set. Using mock AI responses.')
+  // MISTRAL_API_KEY is not set. Using mock AI responses.
 }
 
 export const mistralClient = apiKey ? new Mistral({ apiKey }) : null as Mistral | null
