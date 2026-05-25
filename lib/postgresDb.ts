@@ -3,6 +3,15 @@
 
 import { Pool, PoolClient } from 'pg'
 
+// Type declarations for Node.js environment
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      DATABASE_URL?: string
+    }
+  }
+}
+
 // Types (same as localStorageDb for compatibility)
 export type UserProfile = {
   id: string
@@ -64,7 +73,7 @@ const getPool = (): Pool | null => {
       })
       
       // Test connection silently
-      pool.connect((err, client, release) => {
+      pool.connect((err: any, client: any, release: any) => {
         if (err) {
           pool = null // Reset pool on connection failure
         } else {
@@ -185,7 +194,7 @@ export const db = {
     getAll: async (): Promise<UserProfile[]> => {
       return withPostgres(async (client) => {
         const result = await client.query('SELECT * FROM users ORDER BY created_at DESC')
-        return result.rows.map(row => ({
+        return result.rows.map((row: any) => ({
           ...row,
           interests: row.interests || [],
           looking_for: row.looking_for || []
@@ -368,7 +377,7 @@ export const db = {
         // Handle empty excludedIds array
         if (!excludedIds || excludedIds.length === 0) {
           const result = await client.query('SELECT * FROM users ORDER BY created_at DESC')
-          return result.rows.map(row => ({
+          return result.rows.map((row: any) => ({
             ...row,
             interests: row.interests || [],
             looking_for: row.looking_for || []
@@ -380,7 +389,7 @@ export const db = {
         const query = `SELECT * FROM users WHERE id NOT IN (${placeholders}) ORDER BY created_at DESC`
         
         const result = await client.query(query, excludedIds)
-        return result.rows.map(row => ({
+        return result.rows.map((row: any) => ({
           ...row,
           interests: row.interests || [],
           looking_for: row.looking_for || []
@@ -615,3 +624,4 @@ if (typeof window === 'undefined') {
   initializeDatabase().catch(() => {})
   initializeDemoData().catch(() => {})
 }
+

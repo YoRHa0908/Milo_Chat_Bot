@@ -159,8 +159,12 @@ export async function DELETE(request: NextRequest) {
     // In a real PostgreSQL implementation, we'd have a proper delete method
     if (typeof window === 'undefined') {
       // Server-side: update in-memory store
-      const { saveToStorage } = require('@/lib/localStorageDb')
-      saveToStorage('users', allUsers)
+      // The database abstraction handles this automatically
+      // We'll use the db.users.delete method if it exists
+      const userDeleted = await db.users.delete(userId)
+      if (!userDeleted) {
+        return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 })
+      }
     } else {
       // Client-side: update localStorage
       localStorage.setItem('milo_users', JSON.stringify(allUsers))

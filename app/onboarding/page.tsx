@@ -40,7 +40,6 @@ export default function OnboardingPage() {
     const isEditMode = urlParams.get('edit') === 'true'
     
     const userId = localStorage.getItem('milo_user_id')
-    console.log('Loading user data, userId:', userId, 'isEditMode:', isEditMode)
     
     // Only load existing data if we have a userId AND we're in edit mode
     if (userId && isEditMode) {
@@ -49,10 +48,8 @@ export default function OnboardingPage() {
       
       // Load user data from localStorage
       const existingUsers = JSON.parse(localStorage.getItem('milo_users') || '[]')
-      console.log('Existing users in localStorage:', existingUsers)
       
       const currentUser = existingUsers.find((user: any) => user.id === userId)
-      console.log('Found current user:', currentUser)
       
       if (currentUser) {
         setFormData({
@@ -64,16 +61,13 @@ export default function OnboardingPage() {
           interests: currentUser.interests || [],
           looking_for: currentUser.looking_for || []
         })
-        console.log('Form data set for edit mode')
       } else {
-        console.log('User not found in localStorage')
         // User not found, treat as new user
         setIsEditing(false)
         setExistingUserId(null)
       }
     } else {
       // Not in edit mode OR no userId - show empty form for new registration
-      console.log('Showing empty form for new registration')
       setIsEditing(false)
       setExistingUserId(null)
       // Ensure form is empty
