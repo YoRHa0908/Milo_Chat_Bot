@@ -60,6 +60,28 @@ const serverMemoryStore: {
   matches: []
 }
 
+// Initialize server memory store from backup file if it exists
+if (typeof window === 'undefined') {
+  try {
+    const fs = require('fs')
+    const path = require('path')
+    const backupFile = path.join(process.cwd(), '.localStorageBackup.json')
+    
+    if (fs.existsSync(backupFile)) {
+      const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'))
+      
+      if (backupData.users) serverMemoryStore.users = backupData.users
+      if (backupData.chatSessions) serverMemoryStore.chatSessions = backupData.chatSessions
+      if (backupData.chatMessages) serverMemoryStore.chatMessages = backupData.chatMessages
+      if (backupData.matches) serverMemoryStore.matches = backupData.matches
+      
+      console.log(`Loaded ${serverMemoryStore.users.length} users from backup file`)
+    }
+  } catch (error) {
+    console.log('No backup file found or error loading backup:', error.message)
+  }
+}
+
 // Helper function to save to appropriate storage
 export const saveToStorage = (key: string, data: any): void => {
   if (typeof window === 'undefined') {
@@ -105,27 +127,7 @@ export const saveToStorage = (key: string, data: any): void => {
 // Helper function to load from appropriate storage
 const loadFromStorage = (key: string): any => {
   if (typeof window === 'undefined') {
-    // Server-side: load from in-memory store or backup file
-    try {
-      // Try to load from backup file first
-      const fs = require('fs')
-      const path = require('path')
-      const backupFile = path.join(process.cwd(), '.localStorageBackup.json')
-      
-      if (fs.existsSync(backupFile)) {
-        const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'))
-        
-        // Update server memory store with backup data
-        if (backupData.users) serverMemoryStore.users = backupData.users
-        if (backupData.chatSessions) serverMemoryStore.chatSessions = backupData.chatSessions
-        if (backupData.chatMessages) serverMemoryStore.chatMessages = backupData.chatMessages
-        if (backupData.matches) serverMemoryStore.matches = backupData.matches
-      }
-    } catch (error) {
-      console.log('No backup file found or error loading backup:', error.message)
-    }
-    
-    // Return from server memory store
+    // Server-side: load from in-memory store
     switch (key) {
       case 'users':
         return serverMemoryStore.users
@@ -212,6 +214,18 @@ const fallbackStorage = {
     getAllExcept: (excludedIds: string[]): UserProfile[] => {
       const users = fallbackStorage.users.getAll()
       return users.filter(user => !excludedIds.includes(user.id))
+    },
+    
+    delete: (id: string): boolean => {
+      const users = fallbackStorage.users.getAll()
+      const initialLength = users.length
+      const filteredUsers = users.filter(user => user.id !== id)
+      
+      if (filteredUsers.length < initialLength) {
+        saveToStorage('users', filteredUsers)
+        return true
+      }
+      return false
     }
   },
   
