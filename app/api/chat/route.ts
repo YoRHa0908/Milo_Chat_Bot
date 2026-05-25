@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
           age: null,
           location: null,
           bio: null,
-          interests: [],
-          looking_for: []
+          interests: ['Socializing', 'Meeting People', 'Conversation'], // Default interests for better matching
+          looking_for: ['Friendship'] // Default looking_for
         })
       } catch (error) {
         console.error('Error creating user profile in chat API:', error)
@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
           age: null,
           location: null,
           bio: null,
-          interests: [],
-          looking_for: [],
+          interests: ['Socializing', 'Meeting People', 'Conversation'], // Default interests
+          looking_for: ['Friendship'], // Default looking_for
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }

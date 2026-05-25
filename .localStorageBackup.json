@@ -1,0 +1,212 @@
+{
+  "users": [
+    {
+      "id": "17797054641253zkzfxp7x",
+      "created_at": "2026-05-25T11:59:19.205Z",
+      "updated_at": "2026-05-25T11:59:19.205Z",
+      "name": "dhana",
+      "email": null,
+      "age": 30,
+      "location": "San Francisco, USA",
+      "bio": "Creative professional who loves art, technology, and meeting new people.",
+      "interests": [
+        "Art",
+        "Technology",
+        "Travel",
+        "Coffee"
+      ],
+      "looking_for": [
+        "Dating",
+        "Friendship"
+      ]
+    },
+    {
+      "id": "demo-user-1",
+      "created_at": "2026-05-25T12:00:00.000Z",
+      "updated_at": "2026-05-25T12:00:00.000Z",
+      "name": "Alex Johnson",
+      "email": "alex@example.com",
+      "age": 28,
+      "location": "New York, USA",
+      "bio": "Software engineer who loves hiking and photography. Looking to meet creative people.",
+      "interests": [
+        "Technology",
+        "Hiking",
+        "Photography",
+        "Coffee"
+      ],
+      "looking_for": [
+        "Friendship",
+        "Networking",
+        "Activity Partners"
+      ]
+    },
+    {
+      "id": "demo-user-2",
+      "created_at": "2026-05-25T12:00:00.000Z",
+      "updated_at": "2026-05-25T12:00:00.000Z",
+      "name": "Sam Taylor",
+      "email": "sam@example.com",
+      "age": 32,
+      "location": "London, UK",
+      "bio": "Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.",
+      "interests": [
+        "Art",
+        "Movies",
+        "Cooking",
+        "Travel"
+      ],
+      "looking_for": [
+        "Dating",
+        "Creative Collaboration"
+      ]
+    },
+    {
+      "id": "demo-user-3",
+      "created_at": "2026-05-25T12:00:00.000Z",
+      "updated_at": "2026-05-25T12:00:00.000Z",
+      "name": "Jordan Lee",
+      "email": "jordan@example.com",
+      "age": 25,
+      "location": "Tokyo, Japan",
+      "bio": "Language teacher and bookworm. Passionate about cultural exchange and learning new things.",
+      "interests": [
+        "Reading",
+        "Travel",
+        "Language Learning",
+        "Yoga"
+      ],
+      "looking_for": [
+        "Friendship",
+        "Study Buddies",
+        "Travel Companions"
+      ]
+    },
+    {
+      "id": "1779711104636e6d95nyfk",
+      "created_at": "2026-05-25T12:11:44.676Z",
+      "updated_at": "2026-05-25T12:11:44.676Z",
+      "name": "Qing Lee",
+      "email": "jane0908hill@outlook.com",
+      "age": 12,
+      "location": "japan",
+      "bio": null,
+      "interests": [
+        "Technology"
+      ],
+      "looking_for": [
+        "Dating"
+      ]
+    }
+  ],
+  "chatSessions": [
+    {
+      "id": "17797103592046w2apaqir",
+      "user_id": "17797054641253zkzfxp7x",
+      "created_at": "2026-05-25T11:59:19.204Z",
+      "updated_at": "2026-05-25T11:59:19.204Z"
+    },
+    {
+      "id": "1779711117943dbulai2bu",
+      "user_id": "1779711104636e6d95nyfk",
+      "created_at": "2026-05-25T12:11:57.943Z",
+      "updated_at": "2026-05-25T12:11:57.943Z"
+    }
+  ],
+  "chatMessages": [
+    {
+      "id": "1779710359205azex4nf96",
+      "session_id": "17797103592046w2apaqir",
+      "role": "user",
+      "content": "Hi, milo",
+      "created_at": "2026-05-25T11:59:19.205Z"
+    },
+    {
+      "id": "1779710359206e1wsq6f9t",
+      "session_id": "17797103592046w2apaqir",
+      "role": "assistant",
+      "content": "Milo: Hey dhana! 👋 I'm Milo, your warm and friendly matchmaking assistant. I'm absolutely over the moon to help you find meaningful connections that light up your life! To get us started, could you tell me what kind of connection you're hoping to find? Friendship, dating, networking, or maybe activity partners? Whatever feels right for you, my friend!",
+      "created_at": "2026-05-25T11:59:19.206Z"
+    },
+    {
+      "id": "177971037133740k3qs0nd",
+      "session_id": "17797103592046w2apaqir",
+      "role": "user",
+      "content": "I am looking for a partner",
+      "created_at": "2026-05-25T11:59:31.337Z"
+    },
+    {
+      "id": "1779710371337a7li65wvp",
+      "session_id": "17797103592046w2apaqir",
+      "role": "assistant",
+      "content": "Milo: That's absolutely wonderful! 😊 I'm so proud of you for taking this beautiful step toward connection. Now I'd love to get to know the amazing person you are better. What are 2-3 things that make your heart sing or that you're really passionate about? (Think hobbies, activities, or anything that brings you pure joy!)",
+      "created_at": "2026-05-25T11:59:31.337Z"
+    },
+    {
+      "id": "1779711117943faem7lw5q",
+      "session_id": "1779711117943dbulai2bu",
+      "role": "user",
+      "content": "Hi, I am here to meet my friend",
+      "created_at": "2026-05-25T12:11:57.943Z"
+    },
+    {
+      "id": "17797111179442atdoj1hd",
+      "session_id": "1779711117943dbulai2bu",
+      "role": "assistant",
+      "content": "Milo: Hey Qing Lee! 👋 I'm Milo, your warm and friendly matchmaking assistant. I'm absolutely over the moon to help you find meaningful connections that light up your life! To get us started, could you tell me what kind of connection you're hoping to find? Friendship, dating, networking, or maybe activity partners? Whatever feels right for you, my friend!",
+      "created_at": "2026-05-25T12:11:57.944Z"
+    },
+    {
+      "id": "17797111422251tqhvrdvn",
+      "session_id": "1779711117943dbulai2bu",
+      "role": "user",
+      "content": "I like music",
+      "created_at": "2026-05-25T12:12:22.225Z"
+    },
+    {
+      "id": "17797111422251ff9rjki3",
+      "session_id": "1779711117943dbulai2bu",
+      "role": "assistant",
+      "content": "Milo: No pressure at all, my dear friend! 😊 Just let me know what feels right in your heart: friendship, dating, networking, or activity partners? I'm here to lovingly support you in finding exactly what your soul is looking for!",
+      "created_at": "2026-05-25T12:12:22.225Z"
+    }
+  ],
+  "matches": [
+    {
+      "id": "1779711144591n0xn081gr",
+      "user_id": "1779711104636e6d95nyfk",
+      "matched_user_id": "17797054641253zkzfxp7x",
+      "match_score": 0.25,
+      "status": "accepted",
+      "created_at": "2026-05-25T12:12:24.591Z",
+      "updated_at": "2026-05-25T12:12:33.106Z"
+    },
+    {
+      "id": "17797111445921cg95br88",
+      "user_id": "1779711104636e6d95nyfk",
+      "matched_user_id": "demo-user-1",
+      "match_score": 0.25,
+      "status": "accepted",
+      "created_at": "2026-05-25T12:12:24.592Z",
+      "updated_at": "2026-05-25T12:12:33.866Z"
+    },
+    {
+      "id": "17797111445925nfjnw3ny",
+      "user_id": "1779711104636e6d95nyfk",
+      "matched_user_id": "demo-user-2",
+      "match_score": 0,
+      "status": "accepted",
+      "created_at": "2026-05-25T12:12:24.592Z",
+      "updated_at": "2026-05-25T12:12:34.471Z"
+    },
+    {
+      "id": "17797111445921vbtnfoww",
+      "user_id": "1779711104636e6d95nyfk",
+      "matched_user_id": "demo-user-3",
+      "match_score": 0,
+      "status": "rejected",
+      "created_at": "2026-05-25T12:12:24.592Z",
+      "updated_at": "2026-05-25T12:12:35.396Z"
+    }
+  ]
+}

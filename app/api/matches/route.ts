@@ -125,14 +125,23 @@ export async function POST(request: NextRequest) {
           return null // Skip this match
         }
 
+        // Ensure both users have interests for better matching
+        const currentUserInterests = currentUser.interests?.length > 0 
+          ? currentUser.interests 
+          : ['Socializing', 'Meeting People', 'Conversation'] // Default interests
+        
+        const matchedUserInterests = matchedUser.interests?.length > 0 
+          ? matchedUser.interests 
+          : ['Socializing', 'Meeting People', 'Conversation'] // Default interests
+
         // Calculate match score based on shared interests
-        const sharedInterests = currentUser.interests?.filter((interest: string) => 
-          matchedUser.interests?.includes(interest)
+        const sharedInterests = currentUserInterests.filter((interest: string) => 
+          matchedUserInterests.includes(interest)
         ).length || 0
 
         const totalInterests = new Set([
-          ...(currentUser.interests || []),
-          ...(matchedUser.interests || [])
+          ...currentUserInterests,
+          ...matchedUserInterests
         ]).size
 
         const matchScore = totalInterests > 0 ? sharedInterests / totalInterests : 0.5

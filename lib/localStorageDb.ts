@@ -77,6 +77,61 @@ if (typeof window === 'undefined') {
       
       console.log(`Loaded ${serverMemoryStore.users.length} users from backup file`)
     }
+    
+    // If no users exist, create demo users
+    if (serverMemoryStore.users.length === 0) {
+      const demoUsers = [
+        {
+          id: 'demo-user-1',
+          name: 'Alex Johnson',
+          email: 'alex@example.com',
+          age: 28,
+          location: 'New York, USA',
+          bio: 'Software engineer who loves hiking and photography. Looking to meet creative people.',
+          interests: ['Technology', 'Hiking', 'Photography', 'Coffee'],
+          looking_for: ['Friendship', 'Networking', 'Activity Partners'],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'demo-user-2',
+          name: 'Sam Taylor',
+          email: 'sam@example.com',
+          age: 32,
+          location: 'London, UK',
+          bio: 'Graphic designer and art enthusiast. Enjoy museums, indie films, and trying new restaurants.',
+          interests: ['Art', 'Movies', 'Cooking', 'Travel'],
+          looking_for: ['Dating', 'Creative Collaboration'],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'demo-user-3',
+          name: 'Jordan Lee',
+          email: 'jordan@example.com',
+          age: 25,
+          location: 'Tokyo, Japan',
+          bio: 'Language teacher and bookworm. Passionate about cultural exchange and learning new things.',
+          interests: ['Reading', 'Travel', 'Language Learning', 'Yoga'],
+          looking_for: ['Friendship', 'Study Buddies', 'Travel Companions'],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ]
+      
+      serverMemoryStore.users = demoUsers
+      console.log(`Created ${demoUsers.length} demo users for fallback storage`)
+      
+      // Save to backup file
+      const backupData = {
+        users: serverMemoryStore.users,
+        chatSessions: serverMemoryStore.chatSessions,
+        chatMessages: serverMemoryStore.chatMessages,
+        matches: serverMemoryStore.matches
+      }
+      
+      fs.writeFileSync(backupFile, JSON.stringify(backupData, null, 2))
+    }
   } catch (error) {
     console.log('No backup file found or error loading backup:', error instanceof Error ? error.message : String(error))
   }
